@@ -7,19 +7,29 @@ pub const PLAYER_SPEED: f32 = 500.0;
 pub const NUMBER_OF_ENEMIES: usize = 4;
 pub const ENEMY_SPEED: f32 = 200.0;
 pub const ENEMY_SIZE: f32 = 64.0;
+pub const NUMBER_OF_STARS: usize = 1;
+pub const STAR_SIZE: f32 = 30.0;
+pub const STAR_SPAWN_TIME: f32 = 1.0;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .init_resource::<Score>()
+        .init_resource::<StarSpawnTimer>()
         .add_startup_system(spawn_player)
         .add_startup_system(spawn_camera)
         .add_startup_system(spawn_enemies)
+        .add_startup_system(spawn_stars)
         .add_system(enemy_movement)
         .add_system(update_enemy_direction)
         .add_system(player_movement)
         .add_system(confine_player_movement)
         .add_system(confine_enemy_movement)
         .add_system(enemy_hit_player)
+        .add_system(player_hit_star)
+        .add_system(update_score)
+        .add_system(tick_star_spawn_timer)
+        .add_system(spawn_stars_over_time)
         .run();
 }
 
@@ -29,6 +39,33 @@ pub struct Player {}
 #[derive(Component)]
 pub struct Enemy {
     pub direction: Vec2,
+}
+
+#[derive(Component)]
+pub struct Star {}
+
+#[derive(Resource)]
+pub struct Score {
+    pub value: u32,
+}
+
+impl Default for Score {
+    fn default() -> Self {
+        Score {
+            value: 0
+        }
+    }
+}
+
+#[derive(Resource)]
+pub struct StarSpawnTimer {
+    pub timer: Timer,
+}
+
+impl Default for StarSpawnTimer {
+    fn default() -> Self {
+        StarSpawnTimer { timer: Timer::from_seconds(STAR_SPAWN_TIME, TimerMode::Repeating) }
+    }
 }
 
 pub fn spawn_player(
@@ -76,6 +113,26 @@ pub fn spawn_enemies(
             Enemy {
                 direction: Vec2::new(random::<f32>(), random::<f32>()).normalize(),
             },
+        ));
+    }
+}
+
+pub fn spawn_stars(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    asset_server: Res<AssetServer>,
+) {
+    let window: &Window = window_query.get_single().unwrap();
+    for _ in 0..NUMBER_OF_STARS {
+        let random_x: f32 = random::<f32>() * window.width();
+        let random_y: f32 = random::<f32>() * window.height();
+        commands.spawn((
+            SpriteBundle {
+                transform: Transform::from_xyz(random_x, random_y, 0.0),
+                texture: asset_server.load("sprites/star.png"),
+                ..default()
+            },
+            Star {},
         ));
     }
 }
@@ -241,5 +298,52 @@ pub fn enemy_hit_player(
                 commands.entity(player_entity).despawn();
             }
         }
+    }
+}
+
+pub fn player_hit_star(
+    mut commands: Commands,
+    star_query: Query<(Entity, &Transform), With<Star>>,
+    player_query: Query<&Transform, With<Player>>,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
+    mut score: ResMut<Score>,
+) {
+    if let Ok(player_transform) = player_query.get_single() {
+        for (star_entity, star_transform) in star_query.iter() {
+            let distance = star_transform
+                .translation
+                .distance(player_transform.translation);
+            let star_radius = STAR_SIZE / 2.0;
+            let player_radius = PLAYER_SIZE / 2.0;
+            if distance < star_radius + player_radius {
+                println!("picked up a star!");
+                score.value += 1;
+                let sound_effect = asset_server.load("audio/laserLarge_000.ogg");
+                audio.play(sound_effect);
+                commands.entity(star_entity).despawn();
+            }
+        }
+    }
+}
+
+pub fn update_score(score: Res<Score>) {
+    if score.is_changed() {
+        println!("Score: {}", score.value.to_string());
+    }
+}
+
+pub fn tick_star_spawn_timer(mut star_spawn_timer: ResMut<StarSpawnTimer>, time: Res<Time>) {
+    star_spawn_timer.timer.tick(time.delta());
+}
+
+pub fn spawn_stars_over_time(
+    commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    asset_server: Res<AssetServer>,
+    star_spawn_timer: Res<StarSpawnTimer>,
+) {
+    if star_spawn_timer.timer.finished() {
+        spawn_stars(commands, window_query, asset_server)
     }
 }
