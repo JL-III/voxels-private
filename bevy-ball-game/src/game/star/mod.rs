@@ -4,7 +4,7 @@ use crate::AppState;
 
 use self::{
     resources::StarSpawnTimer,
-    systems::{spawn_stars, spawn_stars_over_time, tick_star_spawn_timer, despawn_stars},
+    systems::{despawn_stars, spawn_stars, spawn_stars_over_time, tick_star_spawn_timer},
 };
 
 use super::SimulationState;
@@ -23,12 +23,9 @@ impl Plugin for StarPlugin {
         app.init_resource::<StarSpawnTimer>()
             .add_system(spawn_stars.in_schedule(OnEnter(AppState::Game)))
             .add_systems(
-                (
-                    tick_star_spawn_timer,
-                    spawn_stars_over_time,
-                )
-                .in_set(OnUpdate(AppState::Game))
-                .in_set(OnUpdate(SimulationState::Running))
+                (tick_star_spawn_timer, spawn_stars_over_time)
+                    .in_set(OnUpdate(AppState::Game))
+                    .in_set(OnUpdate(SimulationState::Running)),
             )
             .add_system(despawn_stars.in_schedule(OnExit(AppState::Game)));
     }

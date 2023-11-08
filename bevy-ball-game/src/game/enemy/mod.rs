@@ -5,8 +5,8 @@ use crate::AppState;
 use self::{
     resources::EnemySpawnTimer,
     systems::{
-        confine_enemy_movement, enemy_movement, spawn_enemies, spawn_enemies_over_time,
-        tick_enemy_spawn_timer, update_enemy_direction, despawn_enemies,
+        confine_enemy_movement, despawn_enemies, enemy_movement, spawn_enemies,
+        spawn_enemies_over_time, tick_enemy_spawn_timer, update_enemy_direction,
     },
 };
 

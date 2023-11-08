@@ -23,10 +23,7 @@ pub fn spawn_stars(
     }
 }
 
-pub fn despawn_stars(
-    mut commands: Commands,
-    star_query: Query<Entity, With<Star>>
-) {
+pub fn despawn_stars(mut commands: Commands, star_query: Query<Entity, With<Star>>) {
     for star in star_query.iter() {
         commands.entity(star).despawn();
     }
