@@ -1,0 +1,9 @@
+[package]
+name = "voxels"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.12.0"
+bevy_screen_diagnostics = "0.4.0"
+rand = "0.8.0"
