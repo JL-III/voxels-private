@@ -34,6 +34,7 @@ pub fn update_command_interface(
     if let Some(key) = keyboard_input.get_just_pressed().next() {
         match key {
             KeyCode::Return => {
+                //future dispatch command location
                 println!("Text input: {}", &*string);
                 string.clear();
             }
@@ -43,7 +44,7 @@ pub fn update_command_interface(
             KeyCode::Escape => {
                 string.clear();
             }
-            _ => {} // Handle other keys or do nothing
+            _ => {}
         }
     }
     for ev in event_reader_char.read() {
