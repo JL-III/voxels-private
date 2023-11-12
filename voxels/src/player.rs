@@ -38,23 +38,6 @@ impl Default for MovementSettings {
 #[derive(Component)]
 pub struct Player;
 
-fn toggle_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
-    if let Ok(mut window) = window_query.get_single_mut() {
-        match window.cursor.grab_mode {
-            CursorGrabMode::None => {
-                window.cursor.grab_mode = CursorGrabMode::Confined;
-                window.cursor.visible = false;
-                println!("Cursorgrab set to Confined")
-            }
-            _ => {
-                window.cursor.grab_mode = CursorGrabMode::None;
-                window.cursor.visible = true;
-                println!("Cursorgrab set to None")
-            }
-        }
-    }
-}
-
 fn grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
     if let Ok(mut window) = window_query.get_single_mut() {
         window.cursor.grab_mode = CursorGrabMode::Confined;
@@ -63,9 +46,17 @@ fn grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
     }
 }
 
+fn release_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
+    if let Ok(mut window) = window_query.get_single_mut() {
+        window.cursor.grab_mode = CursorGrabMode::None;
+        window.cursor.visible = true;
+        println!("Cursorgrab set to None")
+    }
+}
+
 pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
     if let Ok(_window) = window_query.get_single_mut() {
-        toggle_grab_cursor(window_query);
+        grab_cursor(window_query);
     } else {
         warn!("Primary window not found for `initial_grab_cursor`!")
     }
@@ -115,7 +106,7 @@ pub fn setup_player(
 }
 
 pub fn player_move(
-    keys: Res<Input<KeyCode>>,
+    keyboard_input: Res<Input<KeyCode>>,
     time: Res<Time>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     settings: Res<MovementSettings>,
@@ -129,7 +120,7 @@ pub fn player_move(
             let forward = Vec3::new(local_z.x, 0., local_z.z);
             let right = Vec3::new(local_z.z, 0., -local_z.x);
 
-            for key in keys.get_pressed() {
+            for key in keyboard_input.get_pressed() {
                 match window.cursor.grab_mode {
                     CursorGrabMode::None => (),
                     _ => match key {
@@ -139,9 +130,6 @@ pub fn player_move(
                         KeyCode::D => velocity += right,
                         KeyCode::Space => velocity += Vec3::Y,
                         KeyCode::ShiftLeft => velocity -= Vec3::Y,
-                        KeyCode::Slash => {
-                            println!("You pressed /")
-                        }
                         _ => (),
                     },
                 }
@@ -194,19 +182,6 @@ pub fn player_look(
     }
 }
 
-pub fn cursor_grab(
-    keys: Res<Input<KeyCode>>,
-    mut primary_window: Query<&mut Window, With<PrimaryWindow>>,
-) {
-    if let Ok(_window) = primary_window.get_single_mut() {
-        if keys.just_pressed(KeyCode::Escape) {
-            toggle_grab_cursor(primary_window);
-        }
-    } else {
-        warn!("Primary window not found for `cursor_grab`");
-    }
-}
-
 pub fn run_world_gen(
     keys: Res<Input<KeyCode>>,
     commands: Commands,
@@ -234,13 +209,13 @@ impl Plugin for PlayerPlugin {
             .init_resource::<MovementSettings>()
             .add_systems(Startup, setup_player)
             .add_systems(Startup, initial_grab_cursor)
-            .add_systems(Update, cursor_grab)
-            .add_systems(Update, run_world_gen)
             .add_systems(Update, run_mesh)
-            .add_systems(OnExit(AppState::Paused), grab_cursor)
+            .add_systems(Update, run_world_gen.run_if(in_state(AppState::Game)))
             .add_systems(
                 Update,
                 (player_move, player_look).run_if(in_state(AppState::Game)),
-            );
+            )
+            .add_systems(OnEnter(AppState::Game), grab_cursor)
+            .add_systems(OnExit(AppState::Game), release_cursor);
     }
 }
