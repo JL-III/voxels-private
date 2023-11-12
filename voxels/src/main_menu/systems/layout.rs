@@ -30,13 +30,6 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                     ..default()
                 })
                 .with_children(|parent| {
-                    // image 1
-                    parent.spawn(ImageBundle {
-                        style: IMAGE_STYLE,
-                        image: asset_server.load("sprites/ball_blue_large.png").into(),
-                        ..default()
-                    });
-
                     // text
                     parent.spawn(TextBundle {
                         text: Text {
@@ -47,12 +40,6 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                             alignment: TextAlignment::Center,
                             ..default()
                         },
-                        ..default()
-                    });
-                    // image 2
-                    parent.spawn(ImageBundle {
-                        style: IMAGE_STYLE,
-                        image: asset_server.load("sprites/ball_red_large.png").into(),
                         ..default()
                     });
                 });

@@ -9,8 +9,8 @@ use systems::*;
 mod camera;
 mod coordinates;
 mod main_menu;
-mod world;
 mod systems;
+mod world;
 
 fn main() {
     App::new()

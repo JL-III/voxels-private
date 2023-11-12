@@ -23,7 +23,7 @@ pub fn transition_to_pause_state(
     if keyboard_input.just_pressed(KeyCode::Escape) {
         if *app_state.get() != AppState::Paused {
             next_app_state.set(AppState::Paused);
-            println!("Entered AppState::MainMenu");
+            println!("Entered AppState::Paused");
         }
     }
 }

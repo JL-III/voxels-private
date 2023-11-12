@@ -7,7 +7,8 @@ use bevy::{
 
 use crate::{
     coordinates::CoordinateDisplay,
-    world::{setup_world, Voxel}, AppState,
+    world::{setup_world, Voxel},
+    AppState,
 };
 
 #[derive(Resource, Default)]
@@ -59,7 +60,8 @@ pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWind
 pub fn setup_player(mut commands: Commands) {
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_xyz(-10.0, 10.0, -10.0).looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
+            transform: Transform::from_xyz(-10.0, 10.0, -10.0)
+                .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
             ..Default::default()
         },
         FlyCam,
@@ -185,6 +187,9 @@ impl Plugin for PlayerPlugin {
             .add_systems(Startup, initial_grab_cursor)
             .add_systems(Update, cursor_grab)
             .add_systems(Update, run_world_gen)
-            .add_systems(Update, (player_move, player_look).run_if(in_state(AppState::Game)));
+            .add_systems(
+                Update,
+                (player_move, player_look).run_if(in_state(AppState::Game)),
+            );
     }
 }
