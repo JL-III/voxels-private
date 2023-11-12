@@ -34,7 +34,7 @@ impl Default for MovementSettings {
 }
 
 #[derive(Component)]
-pub struct FlyCam;
+pub struct Player;
 
 pub fn toggle_grap_cursor(window: &mut Window) {
     match window.cursor.grab_mode {
@@ -64,7 +64,7 @@ pub fn setup_player(mut commands: Commands) {
                 .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
             ..Default::default()
         },
-        FlyCam,
+        Player,
     ));
     commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
@@ -77,7 +77,7 @@ pub fn player_move(
     time: Res<Time>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     settings: Res<MovementSettings>,
-    mut query: Query<&mut Transform, With<FlyCam>>,
+    mut query: Query<&mut Transform, With<Player>>,
     mut coordinate_display_query: Query<&mut Text, With<CoordinateDisplay>>,
 ) {
     if let Ok(window) = window_query.get_single() {
@@ -127,7 +127,7 @@ pub fn player_look(
     window_query: Query<&Window, With<PrimaryWindow>>,
     mut state: ResMut<InputState>,
     motion: Res<Events<MouseMotion>>,
-    mut query: Query<&mut Transform, With<FlyCam>>,
+    mut query: Query<&mut Transform, With<Player>>,
 ) {
     if let Ok(window) = window_query.get_single() {
         let delta_state = state.as_mut();

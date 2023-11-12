@@ -1,7 +1,7 @@
 mod components;
-mod styles;
 mod interactions;
 mod layout;
+mod styles;
 
 use bevy::prelude::*;
 

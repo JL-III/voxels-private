@@ -1,12 +1,12 @@
 use bevy::prelude::*;
-use camera::PlayerPlugin;
+use player::PlayerPlugin;
 
 use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
 use coordinates::CoordinatePlugin;
 use main_menu::MainMenuPlugin;
 use systems::*;
 
-mod camera;
+mod player;
 mod coordinates;
 mod main_menu;
 mod systems;
