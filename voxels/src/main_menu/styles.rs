@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 pub const NORMAL_BUTTON_COLOR: Color = Color::rgb(0.15, 0.15, 0.15);
-
 pub const HOVERED_BUTTON_COLOR: Color = Color::rgb(0.25, 0.25, 0.25);
 pub const PRESSED_BUTTON_COLOR: Color = Color::rgb(0.35, 0.35, 0.35);
 
@@ -20,14 +19,6 @@ pub const BUTTON_STYLE: Style = {
     let mut style = Style::DEFAULT;
     style.justify_content = JustifyContent::Center;
     style.align_items = AlignItems::Center;
-    style
-};
-
-pub const IMAGE_STYLE: Style = {
-    let mut style = Style::DEFAULT;
-    style.min_height = Val::Px(64.0);
-    style.min_width = Val::Px(64.0);
-    style.margin = UiRect::new(Val::Px(8.0), Val::Px(8.0), Val::Px(8.0), Val::Px(8.0));
     style
 };
 
