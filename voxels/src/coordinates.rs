@@ -29,7 +29,7 @@ pub fn build_coordinate_display(
                             flycam.translation.to_string(),
                             TextStyle {
                                 font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                                font_size: 16.0,
+                                font_size: 32.0,
                                 color: Color::WHITE,
                             },
                         )],
@@ -51,7 +51,7 @@ pub fn build_coordinate_display(
                             "coordinates",
                             TextStyle {
                                 font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                                font_size: 16.0,
+                                font_size: 32.0,
                                 color: Color::WHITE,
                             },
                         )],
