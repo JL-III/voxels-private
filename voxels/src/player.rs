@@ -8,7 +8,7 @@ use bevy::{
 
 use crate::{
     coordinates::CoordinateDisplay,
-    quad::create_simple_parallelogram,
+    quad::create_simple_quad,
     world::{setup_world, Voxel},
     AppState,
 };
@@ -194,9 +194,26 @@ pub fn run_world_gen(
     }
 }
 
-pub fn run_mesh(keys: Res<Input<KeyCode>>) {
-    if keys.just_pressed(KeyCode::M) {
-        create_simple_parallelogram();
+pub fn run_mesh(
+    mut commands: Commands,
+    keys: Res<Input<KeyCode>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    if keys.pressed(KeyCode::M) {
+        let mesh: Mesh = create_simple_quad();
+        commands.spawn(PbrBundle {
+            mesh: meshes.add(mesh),
+            material: materials.add(StandardMaterial {
+                unlit: true,
+                ..default()
+            }),
+            transform: Transform {
+                translation: Vec3::new(-15.0, 10.0, -15.0),
+                ..default()
+            },
+            ..default()
+        });
         print!("Created parallelogram!")
     }
 }
