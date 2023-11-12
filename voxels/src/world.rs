@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use rand::Rng;
 
 const WORLD_X: i32 = 10;
-const WORLD_Y: i32 = 2;
+const WORLD_Y: i32 = 5;
 const WORLD_Z: i32 = 10;
 
 #[derive(Component)]
@@ -22,7 +22,7 @@ pub fn setup_world(
     for x in 0..WORLD_X {
         for y in 0..WORLD_Y {
             for z in 0..WORLD_Z {
-                if y == WORLD_Y - 1 {
+                if y >= WORLD_Y - 2 {
                     let random_number: i32 = rng.gen_range(0..100);
                     if random_number % 2 == 0 {
                         commands.spawn((

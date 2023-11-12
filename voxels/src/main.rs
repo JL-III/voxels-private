@@ -6,9 +6,10 @@ use coordinates::CoordinatePlugin;
 use main_menu::MainMenuPlugin;
 use systems::*;
 
-mod player;
 mod coordinates;
 mod main_menu;
+mod player;
+mod quad;
 mod systems;
 mod world;
 

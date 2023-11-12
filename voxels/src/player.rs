@@ -1,4 +1,5 @@
 use bevy::{
+    core_pipeline::clear_color::ClearColorConfig,
     ecs::event::ManualEventReader,
     input::mouse::MouseMotion,
     prelude::*,
@@ -7,6 +8,7 @@ use bevy::{
 
 use crate::{
     coordinates::CoordinateDisplay,
+    quad::create_simple_parallelogram,
     world::{setup_world, Voxel},
     AppState,
 };
@@ -36,36 +38,76 @@ impl Default for MovementSettings {
 #[derive(Component)]
 pub struct Player;
 
-pub fn toggle_grap_cursor(window: &mut Window) {
-    match window.cursor.grab_mode {
-        CursorGrabMode::None => {
-            window.cursor.grab_mode = CursorGrabMode::Confined;
-            window.cursor.visible = false;
-        }
-        _ => {
-            window.cursor.grab_mode = CursorGrabMode::None;
-            window.cursor.visible = true;
+fn toggle_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
+    if let Ok(mut window) = window_query.get_single_mut() {
+        match window.cursor.grab_mode {
+            CursorGrabMode::None => {
+                window.cursor.grab_mode = CursorGrabMode::Confined;
+                window.cursor.visible = false;
+                println!("Cursorgrab set to Confined")
+            }
+            _ => {
+                window.cursor.grab_mode = CursorGrabMode::None;
+                window.cursor.visible = true;
+                println!("Cursorgrab set to None")
+            }
         }
     }
 }
 
-pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
+fn grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
     if let Ok(mut window) = window_query.get_single_mut() {
-        toggle_grap_cursor(&mut window);
+        window.cursor.grab_mode = CursorGrabMode::Confined;
+        window.cursor.visible = false;
+        println!("Cursorgrab set to Confined")
+    }
+}
+
+pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
+    if let Ok(_window) = window_query.get_single_mut() {
+        toggle_grab_cursor(window_query);
     } else {
         warn!("Primary window not found for `initial_grab_cursor`!")
     }
 }
 
-pub fn setup_player(mut commands: Commands) {
-    commands.spawn((
-        Camera3dBundle {
-            transform: Transform::from_xyz(-10.0, 10.0, -10.0)
-                .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
-            ..Default::default()
-        },
-        Player,
-    ));
+pub fn setup_player(
+    mut commands: Commands,
+    asset_server: ResMut<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let skybox_texture_handle = asset_server.load("sprites/skybox.png");
+
+    commands
+        .spawn((
+            Camera3dBundle {
+                camera_3d: Camera3d {
+                    clear_color: ClearColorConfig::Custom(Color::BLACK),
+                    ..Default::default()
+                },
+                transform: Transform::from_xyz(-10.0, 10.0, -10.0)
+                    .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
+                ..Default::default()
+            },
+            Player,
+        ))
+        .with_children(|parent| {
+            parent.spawn(PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Cube { size: 100.0 })),
+                material: materials.add(StandardMaterial {
+                    base_color_texture: Some(skybox_texture_handle),
+                    unlit: true, // Typically skyboxes are unlit
+                    ..default()
+                }),
+                transform: Transform {
+                    scale: Vec3::new(-100.0, -100.0, -100.0), // Negative scale to invert the cube
+                    ..default()
+                },
+                ..default()
+            });
+        });
+
     commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
@@ -156,9 +198,9 @@ pub fn cursor_grab(
     keys: Res<Input<KeyCode>>,
     mut primary_window: Query<&mut Window, With<PrimaryWindow>>,
 ) {
-    if let Ok(mut window) = primary_window.get_single_mut() {
+    if let Ok(_window) = primary_window.get_single_mut() {
         if keys.just_pressed(KeyCode::Escape) {
-            toggle_grap_cursor(&mut window);
+            toggle_grab_cursor(primary_window);
         }
     } else {
         warn!("Primary window not found for `cursor_grab`");
@@ -177,6 +219,13 @@ pub fn run_world_gen(
     }
 }
 
+pub fn run_mesh(keys: Res<Input<KeyCode>>) {
+    if keys.just_pressed(KeyCode::M) {
+        create_simple_parallelogram();
+        print!("Created parallelogram!")
+    }
+}
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -187,6 +236,8 @@ impl Plugin for PlayerPlugin {
             .add_systems(Startup, initial_grab_cursor)
             .add_systems(Update, cursor_grab)
             .add_systems(Update, run_world_gen)
+            .add_systems(Update, run_mesh)
+            .add_systems(OnExit(AppState::Paused), grab_cursor)
             .add_systems(
                 Update,
                 (player_move, player_look).run_if(in_state(AppState::Game)),
