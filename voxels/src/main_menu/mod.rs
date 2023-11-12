@@ -1,12 +1,13 @@
 mod components;
 mod styles;
-mod systems;
+mod interactions;
+mod layout;
 
 use bevy::prelude::*;
 
 use crate::AppState;
 
-use self::systems::{
+use self::{
     interactions::{interact_with_play_button, interact_with_quit_button},
     layout::{despawn_main_menu, spawn_main_menu},
 };
