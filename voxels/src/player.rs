@@ -29,7 +29,7 @@ pub struct MovementSettings {
 impl Default for MovementSettings {
     fn default() -> Self {
         Self {
-            sensitivity: 0.00012,
+            sensitivity: 0.00043,
             speed: 12.,
         }
     }
@@ -140,10 +140,11 @@ pub fn player_move(
             transform.translation += velocity * time.delta_seconds() * settings.speed;
             for mut text in &mut coordinate_display_query {
                 text.sections[0].value = format!(
-                    "x: {}, y: {}, z: {}",
+                    "x: {}, y: {}, z: {}, rotation: {}",
                     transform.translation.x as i32,
                     transform.translation.y as i32,
-                    transform.translation.z as i32
+                    transform.translation.z as i32,
+                    transform.rotation
                 );
             }
         }
@@ -155,31 +156,38 @@ pub fn player_move(
 pub fn player_look(
     settings: Res<MovementSettings>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    mut state: ResMut<InputState>,
+    mut input_state: ResMut<InputState>,
     motion: Res<Events<MouseMotion>>,
     mut query: Query<&mut Transform, With<Player>>,
 ) {
     if let Ok(window) = window_query.get_single() {
-        let delta_state = state.as_mut();
+        let delta_state = input_state.as_mut();
         for mut transform in query.iter_mut() {
+            let (current_yaw, current_pitch, _) = transform.rotation.to_euler(EulerRot::YXZ);
             for ev in delta_state.reader_motion.read(&motion) {
                 match window.cursor.grab_mode {
                     CursorGrabMode::None => (),
                     _ => {
                         let window_scale = window.height().min(window.width());
-                        delta_state.pitch -=
+                        let delta_pitch =
                             (settings.sensitivity * ev.delta.y * window_scale).to_radians();
-                        delta_state.yaw -=
+                        let delta_yaw =
                             (settings.sensitivity * ev.delta.x * window_scale).to_radians();
+
+                        delta_state.pitch = (current_pitch - delta_pitch).clamp(-1.54, 1.54);
+                        delta_state.yaw = current_yaw - delta_yaw;
+
+                        transform.rotation = Quat::from_axis_angle(Vec3::Y, delta_state.yaw)
+                            * Quat::from_axis_angle(Vec3::X, delta_state.pitch);
                     }
                 }
-                delta_state.pitch = delta_state.pitch.clamp(-1.54, 1.54);
-
-                transform.rotation = Quat::from_axis_angle(Vec3::Y, delta_state.yaw)
-                    * Quat::from_axis_angle(Vec3::X, delta_state.pitch);
             }
         }
     }
+}
+
+fn lerp(start: f32, end: f32, factor: f32) -> f32 {
+    (1.0 - factor) * start + factor * end
 }
 
 pub fn run_world_gen(
@@ -229,7 +237,7 @@ impl Plugin for PlayerPlugin {
             .add_systems(Update, run_mesh)
             .add_systems(Update, run_world_gen.run_if(in_state(AppState::Game)))
             .add_systems(
-                Update,
+                FixedUpdate,
                 (player_move, player_look).run_if(in_state(AppState::Game)),
             )
             .add_systems(OnEnter(AppState::Game), grab_cursor)
