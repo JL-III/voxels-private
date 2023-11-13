@@ -186,10 +186,6 @@ pub fn player_look(
     }
 }
 
-fn lerp(start: f32, end: f32, factor: f32) -> f32 {
-    (1.0 - factor) * start + factor * end
-}
-
 pub fn run_world_gen(
     keys: Res<Input<KeyCode>>,
     commands: Commands,
