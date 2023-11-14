@@ -8,9 +8,8 @@ use bevy::{
 
 use crate::{
     coordinates::CoordinateDisplay,
-    quad::create_simple_quad,
     world::{setup_world, Voxel},
-    AppState,
+    AppState, block::create_simple_cube,
 };
 
 #[derive(Resource, Default)]
@@ -64,11 +63,10 @@ pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWind
 
 pub fn setup_player(
     mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let skybox_texture_handle = asset_server.load("sprites/skybox.png");
+    // let skybox_texture_handle = asset_server.load("sprites/skybox.png");
 
     commands
         .spawn((
@@ -87,7 +85,8 @@ pub fn setup_player(
             parent.spawn(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: 100.0 })),
                 material: materials.add(StandardMaterial {
-                    base_color_texture: Some(skybox_texture_handle),
+                    base_color: Color::rgb(20.0 / 255.0, 11.0 / 255.0, 54.0 / 255.0),
+                    // base_color_texture: Some(skybox_texture_handle),
                     unlit: true, // Typically skyboxes are unlit
                     ..default()
                 }),
@@ -205,17 +204,14 @@ pub fn run_mesh(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     if keys.pressed(KeyCode::M) {
-        let mesh: Mesh = create_simple_quad();
+        let back_mesh: Mesh = create_simple_cube(Vec3::new(10.0, 10.0, 10.0));
         commands.spawn(PbrBundle {
-            mesh: meshes.add(mesh),
+            mesh: meshes.add(back_mesh),
             material: materials.add(StandardMaterial {
                 unlit: true,
                 ..default()
             }),
-            transform: Transform {
-                translation: Vec3::new(-15.0, 10.0, -15.0),
-                ..default()
-            },
+            transform: Transform { ..default() },
             ..default()
         });
         print!("Created parallelogram!")
