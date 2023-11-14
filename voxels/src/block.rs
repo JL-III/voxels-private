@@ -1,9 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{
-        mesh::Indices,
-        render_resource::PrimitiveTopology,
-    },
+    render::{mesh::Indices, render_resource::PrimitiveTopology},
 };
 
 pub fn create_simple_cube(offset: Vec3) -> Mesh {

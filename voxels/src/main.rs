@@ -7,11 +7,11 @@ use coordinates::CoordinatePlugin;
 use main_menu::MainMenuPlugin;
 use systems::*;
 
+mod block;
 mod command_interface;
 mod coordinates;
 mod main_menu;
 mod player;
-mod block;
 mod systems;
 mod world;
 

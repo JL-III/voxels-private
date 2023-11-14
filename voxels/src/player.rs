@@ -7,9 +7,10 @@ use bevy::{
 };
 
 use crate::{
+    block::create_simple_cube,
     coordinates::CoordinateDisplay,
     world::{setup_world, Voxel},
-    AppState, block::create_simple_cube,
+    AppState,
 };
 
 #[derive(Resource, Default)]
@@ -208,7 +209,7 @@ pub fn run_mesh(
         commands.spawn(PbrBundle {
             mesh: meshes.add(back_mesh),
             material: materials.add(StandardMaterial {
-                unlit: true,
+                unlit: false,
                 ..default()
             }),
             transform: Transform { ..default() },
