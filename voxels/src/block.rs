@@ -38,17 +38,6 @@ pub fn create_simple_cube(offset: Vec3) -> Mesh {
         Vec3::new(-0.5, -0.5, 0.5) + offset,
     ];
 
-    // Define the indices for the 12 triangles (6 faces * 2 triangles per face)
-    let indices = vec![
-        // Front face
-        0, 1, 2, 2, 3, 0, // Back face
-        4, 5, 6, 6, 7, 4, // Left face
-        8, 9, 10, 10, 11, 8, // Right face
-        12, 13, 14, 14, 15, 12, // Top face
-        16, 17, 18, 18, 19, 16, // Bottom face
-        20, 21, 22, 22, 23, 20,
-    ];
-
     // Define UV coordinates for each vertex
     let uvs = vec![
         // Front face UVs
@@ -110,11 +99,21 @@ pub fn create_simple_cube(offset: Vec3) -> Mesh {
         [0.0, 1.0, 0.0],
     ];
 
+    // Define the indices for the 12 triangles (6 faces * 2 triangles per face)
+    let indices = vec![
+        0, 1, 2, 2, 3, 0, // Front face
+        4, 5, 6, 6, 7, 4, // Back face
+        8, 9, 10, 10, 11, 8, // Left face
+        12, 13, 14, 14, 15, 12, // Right face
+        16, 17, 18, 18, 19, 16, // Top face
+        20, 21, 22, 22, 23, 20, // Bottom face
+    ];
+
     // Create and return the mesh
     Mesh::new(PrimitiveTopology::TriangleList)
         .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, vertices)
-        .with_indices(Some(Indices::U32(indices)))
         .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
         .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
+        .with_indices(Some(Indices::U32(indices)))
     // Additional attributes like normals and UVs can be added similarly
 }

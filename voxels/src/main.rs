@@ -6,12 +6,14 @@ use command_interface::CommandPlugin;
 use coordinates::CoordinatePlugin;
 use main_menu::MainMenuPlugin;
 use systems::*;
+use world::WorldPlugin;
 
 mod block;
 mod command_interface;
 mod coordinates;
 mod main_menu;
 mod player;
+mod quad;
 mod systems;
 mod world;
 
@@ -22,6 +24,7 @@ fn main() {
         .add_plugins(ScreenDiagnosticsPlugin::default())
         .add_plugins(ScreenFrameDiagnosticsPlugin)
         .add_plugins(PlayerPlugin)
+        .add_plugins(WorldPlugin)
         .add_plugins(CoordinatePlugin)
         .add_plugins(MainMenuPlugin)
         .add_plugins(CommandPlugin)

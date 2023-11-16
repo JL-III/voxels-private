@@ -6,6 +6,8 @@ use bevy::{
     window::{CursorGrabMode, PrimaryWindow},
 };
 
+use bevy_atmosphere::prelude::*;
+
 use crate::{
     block::create_simple_cube,
     coordinates::CoordinateDisplay,
@@ -64,11 +66,7 @@ pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWind
 
 pub fn setup_player(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // let skybox_texture_handle = asset_server.load("sprites/skybox.png");
-
     commands
         .spawn((
             Camera3dBundle {
@@ -81,23 +79,8 @@ pub fn setup_player(
                 ..Default::default()
             },
             Player,
-        ))
-        .with_children(|parent| {
-            parent.spawn(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube { size: 100.0 })),
-                material: materials.add(StandardMaterial {
-                    base_color: Color::rgb(20.0 / 255.0, 11.0 / 255.0, 54.0 / 255.0),
-                    // base_color_texture: Some(skybox_texture_handle),
-                    unlit: true, // Typically skyboxes are unlit
-                    ..default()
-                }),
-                transform: Transform {
-                    scale: Vec3::new(-100.0, -100.0, -100.0), // Negative scale to invert the cube
-                    ..default()
-                },
-                ..default()
-            });
-        });
+            AtmosphereCamera::default(),
+        ));
 
     commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
@@ -204,8 +187,8 @@ pub fn run_mesh(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    if keys.pressed(KeyCode::M) {
-        let back_mesh: Mesh = create_simple_cube(Vec3::new(10.0, 10.0, 10.0));
+    if keys.just_pressed(KeyCode::M) {
+        let back_mesh: Mesh = create_simple_cube(Vec3::new(0.0, 10.0, 0.0));
         commands.spawn(PbrBundle {
             mesh: meshes.add(back_mesh),
             material: materials.add(StandardMaterial {
