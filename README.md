@@ -1,4 +1,4 @@
-# learn-bevy
+# voxels
 
 Some expirements while learning bevy.
 
