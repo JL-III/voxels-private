@@ -187,7 +187,7 @@ pub fn run_mesh(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let block_faces = [
+    let block_faces = vec![
         BlockFace::Front,
         BlockFace::Back,
         BlockFace::Left,
