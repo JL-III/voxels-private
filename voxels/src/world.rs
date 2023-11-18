@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use rand::Rng;
 use bevy::utils::Duration;
 use bevy_atmosphere::prelude::*;
+use rand::Rng;
 
 const WORLD_X: i32 = 10;
 const WORLD_Y: i32 = 5;
@@ -82,9 +82,7 @@ fn daylight_cycle(
 }
 
 // Simple environment
-fn setup_environment(
-    mut commands: Commands,
-) {
+fn setup_environment(mut commands: Commands) {
     // Our Sun
     commands.spawn((
         DirectionalLightBundle {
@@ -99,17 +97,17 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Msaa::Sample4)
-        .insert_resource(AtmosphereModel::new(Nishita {
-            sun_position: Vec3::new(0., 0., -1.),
-            rayleigh_coefficient: Vec3::new(1e-5, 1e-5, 1e-5),
-            ..default()
-        })) // Default Atmosphere material, we can edit it to simulate another planet
-        .insert_resource(CycleTimer(Timer::new(
-            Duration::from_millis(50), // Update our atmosphere every 50ms (in a real game, this would be much slower, but for the sake of an example we use a faster update)
-            TimerMode::Repeating,
-        )))
-        .add_plugins((AtmospherePlugin,))
-        .add_systems(Startup, setup_environment)
-        .add_systems(Update, daylight_cycle);
+            .insert_resource(AtmosphereModel::new(Nishita {
+                sun_position: Vec3::new(0., 0., -1.),
+                rayleigh_coefficient: Vec3::new(1e-5, 1e-5, 1e-5),
+                ..default()
+            })) // Default Atmosphere material, we can edit it to simulate another planet
+            .insert_resource(CycleTimer(Timer::new(
+                Duration::from_millis(50), // Update our atmosphere every 50ms (in a real game, this would be much slower, but for the sake of an example we use a faster update)
+                TimerMode::Repeating,
+            )))
+            .add_plugins((AtmospherePlugin,))
+            .add_systems(Startup, setup_environment)
+            .add_systems(Update, daylight_cycle);
     }
 }

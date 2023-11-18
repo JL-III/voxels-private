@@ -2,8 +2,6 @@ use bevy::math::{Vec2, Vec3};
 use bevy::render::mesh::Indices;
 use bevy::render::mesh::{Mesh, VertexAttributeValues};
 use bevy::render::render_resource::PrimitiveTopology;
-use std::collections::HashMap;
-use std::collections::HashSet;
 use std::hash::Hash;
 use std::hash::Hasher;
 
@@ -42,215 +40,41 @@ fn hash_float_array<H: Hasher>(arr: &[f32], state: &mut H) {
 }
 
 pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    let mut points_order: HashMap<VertexData, u32> = HashMap::new();
-    let mut points_hash: HashSet<VertexData> = HashSet::new();
-    let mut tris: Vec<u32> = Vec::new();
-    let mut p_index = 0u32;
-
-    for mesh in meshes.iter() {
-        if let Some(VertexAttributeValues::Float32x3(vertices)) =
-            mesh.attribute(Mesh::ATTRIBUTE_POSITION)
-        {
-            if let Some(VertexAttributeValues::Float32x3(normals)) =
-                mesh.attribute(Mesh::ATTRIBUTE_NORMAL)
-            {
-                if let Some(VertexAttributeValues::Float32x2(uvs)) =
-                    mesh.attribute(Mesh::ATTRIBUTE_UV_0)
-                {
-                    for ((&[vx, vy, vz], &[nx, ny, nz]), &[ux, uy]) in
-                        vertices.iter().zip(normals.iter()).zip(uvs.iter())
-                    {
-                        let vertex_data = VertexData {
-                            position: Vec3::new(vx, vy, vz),
-                            normal: Vec3::new(nx, ny, nz),
-                            uv: Vec2::new(ux, uy),
-                        };
-                        if !points_hash.contains(&vertex_data) {
-                            points_order.insert(vertex_data.clone(), p_index);
-                            points_hash.insert(vertex_data.clone());
-                            p_index += 1;
-                        }
-                    }
-                }
+    let mut combined_mesh = Mesh::new(PrimitiveTopology::TriangleList);
+    let mut vertices: Vec<[f32; 3]> = Vec::new();
+    let mut normals: Vec<[f32; 3]> = Vec::new();
+    let mut uvs: Vec<[f32; 2]> = Vec::new();
+    let mut indices: Vec<u32> = Vec::new();
+    
+    let mut offset = 0; // This will keep track of the offset for the indices of each quad
+    for mesh in meshes {
+        // Gather the vertex attributes for positions, normals, and uvs
+        if let Some(VertexAttributeValues::Float32x3(positions)) = mesh.attribute(Mesh::ATTRIBUTE_POSITION) {
+            vertices.extend_from_slice(positions);
+        }
+        if let Some(VertexAttributeValues::Float32x3(norms)) = mesh.attribute(Mesh::ATTRIBUTE_NORMAL) {
+            normals.extend_from_slice(norms);
+        }
+        if let Some(VertexAttributeValues::Float32x2(texture_coords)) = mesh.attribute(Mesh::ATTRIBUTE_UV_0) {
+            uvs.extend_from_slice(texture_coords);
+        }
+        
+        // Adjust the indices for each quad by adding the offset
+        if let Some(Indices::U32(mesh_indices)) = mesh.indices() {
+            for &index in mesh_indices {
+                indices.push(index + offset);
             }
         }
-        if let Some(indices) = mesh.indices() {
-            match indices {
-                Indices::U16(indices) => {
-                    for &index in indices.iter() {
-                        process_vertex_data(
-                            mesh,
-                            index as u32,
-                            &mut points_order,
-                            &mut points_hash,
-                            &mut tris,
-                            &mut p_index,
-                        );
-                    }
-                }
-                Indices::U32(indices) => {
-                    for &index in indices.iter() {
-                        process_vertex_data(
-                            mesh,
-                            index,
-                            &mut points_order,
-                            &mut points_hash,
-                            &mut tris,
-                            &mut p_index,
-                        );
-                    }
-                }
-            }
-        }
+        
+        // Increment the offset by the number of vertices in the current quad (which should be 4 for a quad)
+        offset += 4;
     }
-
-    // Now extract the arrays and assign to the mesh
-    extract_arrays(&points_order, &mut mesh);
-    mesh.set_indices(Some(bevy::render::mesh::Indices::U32(tris)));
-    mesh
+    
+    // Now you can set the vertices, normals, uvs, and indices for the combined mesh
+    combined_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
+    combined_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+    combined_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    combined_mesh.set_indices(Some(Indices::U32(indices)));
+    
+    combined_mesh
 }
-
-fn process_vertex_data(
-    mesh: &Mesh,
-    index: u32,
-    points_order: &mut HashMap<VertexData, u32>,
-    points_hash: &mut HashSet<VertexData>,
-    tris: &mut Vec<u32>,
-    p_index: &mut u32,
-) {
-    let vertex = if let Some(VertexAttributeValues::Float32x3(vertices)) =
-        mesh.attribute(Mesh::ATTRIBUTE_POSITION)
-    {
-        Vec3::new(
-            vertices[index as usize][0],
-            vertices[index as usize][1],
-            vertices[index as usize][2],
-        )
-    } else {
-        panic!("Expected Vec3 data for position");
-    };
-
-    let normal = if let Some(VertexAttributeValues::Float32x3(normals)) =
-        mesh.attribute(Mesh::ATTRIBUTE_NORMAL)
-    {
-        Vec3::new(
-            normals[index as usize][0],
-            normals[index as usize][1],
-            normals[index as usize][2],
-        )
-    } else {
-        panic!("Expected Vec3 data for normal");
-    };
-
-    let uv =
-        if let Some(VertexAttributeValues::Float32x2(uvs)) = mesh.attribute(Mesh::ATTRIBUTE_UV_0) {
-            Vec2::new(uvs[index as usize][0], uvs[index as usize][1])
-        } else {
-            panic!("Expected Vec2 data for UV");
-        };
-
-    let vertex_data = VertexData {
-        position: vertex,
-        normal,
-        uv,
-    };
-
-    if !points_hash.contains(&vertex_data) {
-        points_order.insert(vertex_data.clone(), *p_index);
-        points_hash.insert(vertex_data.clone());
-        *p_index += 1;
-    }
-
-    if let Some(&new_index) = points_order.get(&vertex_data) {
-        tris.push(new_index);
-    }
-}
-
-fn extract_arrays(points_order: &HashMap<VertexData, u32>, mesh: &mut Mesh) {
-    let mut verts = Vec::new();
-    let mut norms = Vec::new();
-    let mut uvs = Vec::new();
-
-    // Assuming the keys are stored in the same order they were inserted.
-    for vertex_data in points_order.keys() {
-        verts.push(vertex_data.position);
-        norms.push(vertex_data.normal);
-        uvs.push(vertex_data.uv);
-    }
-
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, verts);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, norms);
-    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-}
-
-// use bevy::{
-//     prelude::*,
-//     render::{mesh::Indices, render_resource::PrimitiveTopology},
-// };
-
-// pub fn create_quad(offset: Vec3) -> Mesh {
-//     let vertices = vec![
-//         Vec3::new(-0.5, -0.5, 0.5) + offset,
-//         Vec3::new(0.5, -0.5, 0.5) + offset,
-//         Vec3::new(0.5, 0.5, 0.5) + offset,
-//         Vec3::new(-0.5, 0.5, 0.5) + offset,
-//     ];
-//     let uvs = vec![];
-//     let normals = vec![];
-//     let indices = vec![];
-
-//     Mesh::new(PrimitiveTopology::TriangleList)
-//         .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, vertices)
-//         .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
-//         .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
-//         .with_indices(Some(Indices::U32(indices)))
-// }
-
-// each of these vertices occur 3 times
-// does this mean we can just ommit these duplicates?
-// or is the function dependent on the order the arrays exist in?
-
-// does it matter how these vertices are introduced into the array?
-// because if not then we can realize a pattern here
-
-//noticing a pattern with the 4 coordinates
-// front back
-// share y values, invert x and z
-
-// front
-// - - +
-// + - +
-// + + +
-// - + +
-
-// back
-// + - -
-// - - -
-// - + -
-// + + -
-
-// left right
-// share y values, invert x and z
-// left
-// - - -
-// - - +
-// - + +
-// + + -
-
-// right
-// + - +
-// + - -
-// + + -
-// + + +
-
-// top bottom
-// share x values, invert y and z
-
-//can you match with an or clause?
-
-// match side {
-//  front or back => {
-//
-//  }
-// }

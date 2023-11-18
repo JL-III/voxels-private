@@ -9,11 +9,14 @@ use bevy::{
 use bevy_atmosphere::prelude::*;
 
 use crate::{
-    block::create_simple_cube,
+    block::{create_quad, BlockFace},
     coordinates::CoordinateDisplay,
+    quad::merge_meshes,
     world::{setup_world, Voxel},
     AppState,
 };
+
+//
 
 #[derive(Resource, Default)]
 pub struct InputState {
@@ -64,23 +67,20 @@ pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWind
     }
 }
 
-pub fn setup_player(
-    mut commands: Commands,
-) {
-    commands
-        .spawn((
-            Camera3dBundle {
-                camera_3d: Camera3d {
-                    clear_color: ClearColorConfig::Custom(Color::BLACK),
-                    ..Default::default()
-                },
-                transform: Transform::from_xyz(-10.0, 10.0, -10.0)
-                    .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
+pub fn setup_player(mut commands: Commands) {
+    commands.spawn((
+        Camera3dBundle {
+            camera_3d: Camera3d {
+                clear_color: ClearColorConfig::Custom(Color::BLACK),
                 ..Default::default()
             },
-            Player,
-            AtmosphereCamera::default(),
-        ));
+            transform: Transform::from_xyz(-10.0, 10.0, -10.0)
+                .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
+            ..Default::default()
+        },
+        Player,
+        AtmosphereCamera::default(),
+    ));
 
     commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
@@ -187,18 +187,35 @@ pub fn run_mesh(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let block_faces = vec![
+        BlockFace::Front,
+        BlockFace::Back,
+        BlockFace::Left,
+        BlockFace::Right,
+        BlockFace::Top,
+        BlockFace::Bottom,
+    ];
+
     if keys.just_pressed(KeyCode::M) {
-        let back_mesh: Mesh = create_simple_cube(Vec3::new(0.0, 10.0, 0.0));
+        let mut gen_meshes: Vec<Mesh> = Vec::new();
+        for side in block_faces.iter() {
+            gen_meshes.push(create_quad(*side, Vec3::new(0.0, 10.0, 0.0)));
+        }
+        // gen_meshes.push(create_quad(BlockFace::Front, Vec3::new(10.0, 10.0, 10.0)));
+        // gen_meshes.push(create_quad(BlockFace::Left, Vec3::new(10.0, 10.0, 10.0)));
+        println!("number of generated meshes: {}", gen_meshes.len());
+        let combined_mesh = merge_meshes(gen_meshes);
         commands.spawn(PbrBundle {
-            mesh: meshes.add(back_mesh),
+            mesh: meshes.add(combined_mesh),
             material: materials.add(StandardMaterial {
+                base_color: Color::WHITE,
                 unlit: false,
                 ..default()
             }),
             transform: Transform { ..default() },
             ..default()
         });
-        print!("Created parallelogram!")
+        print!("Created cube?")
     }
 }
 
