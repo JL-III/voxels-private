@@ -35,7 +35,7 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                         text: Text {
                             sections: vec![TextSection::new(
                                 "Voxel Game",
-                                get_title_text_style(&asset_server),
+                                get_title_text_style(asset_server),
                             )],
                             alignment: TextAlignment::Center,
                             ..default()
@@ -58,7 +58,7 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                         text: Text {
                             sections: vec![TextSection::new(
                                 "Play",
-                                get_button_text_style(&asset_server),
+                                get_button_text_style(asset_server),
                             )],
                             alignment: TextAlignment::Center,
                             ..default()
@@ -82,7 +82,7 @@ pub fn build_main_menu(commands: &mut Commands, asset_server: &Res<AssetServer>)
                         text: Text {
                             sections: vec![TextSection::new(
                                 "Quit",
-                                get_button_text_style(&asset_server),
+                                get_button_text_style(asset_server),
                             )],
                             alignment: TextAlignment::Center,
                             ..default()

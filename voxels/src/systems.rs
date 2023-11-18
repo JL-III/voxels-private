@@ -7,14 +7,9 @@ pub fn transition_to_command_state(
     app_state: Res<State<AppState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Slash) {
-        match *app_state.get() {
-            AppState::Game => {
-                next_app_state.set(AppState::Command);
-                println!("Entered AppState::Command");
-            }
-            _ => {}
-        }
+    if keyboard_input.just_pressed(KeyCode::Slash) && *app_state.get() == AppState::Game {
+        next_app_state.set(AppState::Command);
+        println!("Entered AppState::Command");
     }
 }
 

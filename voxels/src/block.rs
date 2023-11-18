@@ -14,7 +14,6 @@ pub enum BlockFace {
 }
 
 pub fn create_quad(side: BlockFace, offset: Vec3) -> Mesh {
-    
     let result = match side {
         BlockFace::Front => create_front_quad(offset),
         BlockFace::Back => create_back_quad(offset),
@@ -168,7 +167,7 @@ pub fn create_bottom_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>, Vec
         Vec2::new(0.0, 1.0),
         Vec2::new(0.0, 0.0),
         Vec2::new(1.0, 0.0),
-        ];
+    ];
     let normals = vec![
         Vec3::new(0.0, -1.0, 0.0),
         Vec3::new(0.0, -1.0, 0.0),
