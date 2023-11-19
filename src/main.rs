@@ -14,7 +14,7 @@ mod command_interface;
 mod coordinates;
 mod main_menu;
 mod player;
-mod quad;
+mod mesh_utils;
 mod systems;
 mod world;
 

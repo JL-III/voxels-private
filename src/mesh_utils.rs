@@ -22,9 +22,6 @@ impl Eq for VertexData {}
 
 impl Hash for VertexData {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        // Convert each floating-point number to its bitwise representation
-        // and then hash that representation.
-        // This approach treats identical bit patterns as equal.
         hash_float_array(&self.position.to_array(), state);
         hash_float_array(&self.normal.to_array(), state);
         hash_float_array(&self.uv.to_array(), state);
@@ -33,8 +30,6 @@ impl Hash for VertexData {
 
 fn hash_float_array<H: Hasher>(arr: &[f32], state: &mut H) {
     for &num in arr {
-        // We use to_bits to convert the floating-point number to its
-        // bitwise representation, which can be hashed.
         num.to_bits().hash(state);
     }
 }
@@ -46,7 +41,7 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
     let mut uvs: Vec<[f32; 2]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
 
-    let mut offset = 0; // This will keep track of the offset for the indices of each quad
+    let mut offset = 0;
     for mesh in meshes {
         // Gather the vertex attributes for positions, normals, and uvs
         if let Some(VertexAttributeValues::Float32x3(positions)) =
@@ -65,12 +60,12 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
             uvs.extend_from_slice(texture_coords);
         }
 
-        // Adjust the indices for each quad by adding the offset
-        if let Some(Indices::U32(mesh_indices)) = mesh.indices() {
-            for &index in mesh_indices {
-                indices.push(index + offset);
-            }
-        }
+        indices.push(offset);
+        indices.push(1 + offset);
+        indices.push(2 + offset);
+        indices.push(2 + offset);
+        indices.push(3 + offset);
+        indices.push(offset);
 
         // Increment the offset by the number of vertices in the current quad (which should be 4 for a quad)
         offset += 4;

@@ -11,12 +11,10 @@ use bevy_atmosphere::prelude::*;
 use crate::{
     block::{create_quad, BlockFace},
     coordinates::CoordinateDisplay,
-    quad::merge_meshes,
+    mesh_utils::merge_meshes,
     world::{setup_world, Voxel},
     AppState,
 };
-
-//
 
 #[derive(Resource, Default)]
 pub struct InputState {
@@ -198,11 +196,13 @@ pub fn run_mesh(
 
     if keys.just_pressed(KeyCode::M) {
         let mut gen_meshes: Vec<Mesh> = Vec::new();
-        for side in block_faces.iter() {
-            gen_meshes.push(create_quad(*side, Vec3::new(0.0, 10.0, 0.0)));
-        }
-        // gen_meshes.push(create_quad(BlockFace::Front, Vec3::new(10.0, 10.0, 10.0)));
-        // gen_meshes.push(create_quad(BlockFace::Left, Vec3::new(10.0, 10.0, 10.0)));
+        // for side in block_faces.iter() {
+        //     gen_meshes.push(create_quad(*side, Vec3::new(0.0, 10.0, 0.0)));
+        // }
+        gen_meshes.push(create_quad(BlockFace::Front, Vec3::new(10.0, 10.0, 10.0)));
+        gen_meshes.push(create_quad(BlockFace::Left, Vec3::new(10.0, 10.0, 10.0)));
+        gen_meshes.push(create_quad(BlockFace::Top, Vec3::new(10.0, 10.0, 10.0)));
+
         println!("number of generated meshes: {}", gen_meshes.len());
         let combined_mesh = merge_meshes(gen_meshes);
         commands.spawn(PbrBundle {
