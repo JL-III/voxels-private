@@ -2,20 +2,20 @@ use bevy::{prelude::*, render::render_resource::PrimitiveTopology};
 
 #[derive(Clone, Copy)]
 pub enum BlockFace {
-    Front,
-    Back,
-    Left,
-    Right,
+    North,
+    South,
+    East,
+    West,
     Top,
     Bottom,
 }
 
 pub fn create_quad(side: BlockFace, offset: Vec3) -> Mesh {
     let result = match side {
-        BlockFace::Front => create_front_quad(offset),
-        BlockFace::Back => create_back_quad(offset),
-        BlockFace::Left => create_left_quad(offset),
-        BlockFace::Right => create_right_quad(offset),
+        BlockFace::North => create_north_quad(offset),
+        BlockFace::South => create_south_quad(offset),
+        BlockFace::West => create_west_quad(offset),
+        BlockFace::East => create_east_quad(offset),
         BlockFace::Top => create_top_quad(offset),
         BlockFace::Bottom => create_bottom_quad(offset),
     };
@@ -26,7 +26,7 @@ pub fn create_quad(side: BlockFace, offset: Vec3) -> Mesh {
         .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, result.2)
 }
 
-pub fn create_front_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_north_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(-0.5, -0.5, 0.5) + offset,
         Vec3::new(0.5, -0.5, 0.5) + offset,
@@ -48,7 +48,7 @@ pub fn create_front_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
     (vertices, uvs, normals)
 }
 
-pub fn create_back_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_south_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(0.5, -0.5, -0.5) + offset,
         Vec3::new(-0.5, -0.5, -0.5) + offset,
@@ -70,7 +70,7 @@ pub fn create_back_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
     (vertices, uvs, normals)
 }
 
-pub fn create_left_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_west_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(-0.5, -0.5, -0.5) + offset,
         Vec3::new(-0.5, -0.5, 0.5) + offset,
@@ -92,7 +92,7 @@ pub fn create_left_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
     (vertices, uvs, normals)
 }
 
-pub fn create_right_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_east_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(0.5, -0.5, 0.5) + offset,
         Vec3::new(0.5, -0.5, -0.5) + offset,

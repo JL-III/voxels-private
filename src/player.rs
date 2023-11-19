@@ -186,10 +186,10 @@ pub fn run_mesh(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let block_faces = [
-        BlockFace::Front,
-        BlockFace::Back,
-        BlockFace::Left,
-        BlockFace::Right,
+        BlockFace::North,
+        BlockFace::South,
+        BlockFace::West,
+        BlockFace::East,
         BlockFace::Top,
         BlockFace::Bottom,
     ];
@@ -199,8 +199,8 @@ pub fn run_mesh(
         for side in block_faces.iter() {
             gen_meshes.push(create_quad(*side, Vec3::new(0.0, 10.0, 0.0)));
         }
-        // gen_meshes.push(create_quad(BlockFace::Front, Vec3::new(10.0, 10.0, 10.0)));
-        // gen_meshes.push(create_quad(BlockFace::Left, Vec3::new(10.0, 10.0, 10.0)));
+        // gen_meshes.push(create_quad(BlockFace::North, Vec3::new(10.0, 10.0, 10.0)));
+        // gen_meshes.push(create_quad(BlockFace::West, Vec3::new(10.0, 10.0, 10.0)));
         // gen_meshes.push(create_quad(BlockFace::Top, Vec3::new(10.0, 10.0, 10.0)));
 
         println!("number of generated meshes: {}", gen_meshes.len());
