@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-    render::render_resource::PrimitiveTopology,
-};
+use bevy::{prelude::*, render::render_resource::PrimitiveTopology};
 
 #[derive(Clone, Copy)]
 pub enum BlockFace {
