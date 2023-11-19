@@ -36,3 +36,9 @@ impl Plugin for CoordinatePlugin {
         app.add_systems(Startup, spawn_coordinate_display);
     }
 }
+
+pub fn unwrap() {
+    let some_option = Some("Rust");
+    let value = some_option.unwrap(); // This line should trigger the clippy::unwrap_used lint
+    println!("Value: {}", value);
+}
