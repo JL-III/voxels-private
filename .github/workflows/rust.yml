@@ -1,4 +1,4 @@
-name: Rust
+name: lint and build
 
 on:
   push:
@@ -16,12 +16,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install dependencies
+    - name: install dependencies
       run: sudo apt-get install libasound2-dev libudev-dev
     - uses: actions/checkout@v3
     - name: clippy
       run: cargo clippy
-    - name: Build
+    - name: build
       run: cargo build --verbose
-    - name: Run tests
+    - name: run tests
       run: cargo test --verbose
