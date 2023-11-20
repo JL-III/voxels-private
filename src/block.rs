@@ -10,6 +10,10 @@ pub enum BlockFace {
     Bottom,
 }
 
+// i actually think uv mapping will have to exist here since
+// the different sides of a block will be mapped to different things
+// depending on the block
+
 pub fn create_quad(side: BlockFace, offset: Vec3) -> Mesh {
     let result = match side {
         BlockFace::North => create_north_quad(offset),

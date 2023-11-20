@@ -57,7 +57,7 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
         // TODO now that we have a way to target a texture
         // we will probably assign these values to some enums or something?
         // probably material enums but not sure
-        uvs.extend_from_slice(&get_texture(1.0, 2.0));
+        uvs.extend_from_slice(&get_texture(8.0, 6.0));
 
         indices.push(offset);
         indices.push(1 + offset);
