@@ -10,14 +10,6 @@ pub enum BlockFace {
     Bottom,
 }
 
-// uvs dont even seem like they need to be created here,
-// unless the block type enum is going to be passed in here
-// and then a function is defined in order to determine the
-// uvs in the create_quad function.
-
-// not sure if i should separate the logic of the quad creation
-// into its own mod or just leave it here
-
 pub fn create_quad(side: BlockFace, offset: Vec3) -> Mesh {
     let result = match side {
         BlockFace::North => create_north_quad(offset),
@@ -30,133 +22,96 @@ pub fn create_quad(side: BlockFace, offset: Vec3) -> Mesh {
 
     Mesh::new(PrimitiveTopology::TriangleList)
         .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, result.0)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, result.1)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, result.2)
+        .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, result.1)
 }
 
-pub fn create_north_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_north_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(-0.5, -0.5, 0.5) + offset,
         Vec3::new(0.5, -0.5, 0.5) + offset,
         Vec3::new(0.5, 0.5, 0.5) + offset,
         Vec3::new(-0.5, 0.5, 0.5) + offset,
     ];
-    let uvs = vec![
-        Vec2::new(0.0, 0.0),
-        Vec2::new(1.0, 0.0),
-        Vec2::new(1.0, 1.0),
-        Vec2::new(0.0, 1.0),
-    ];
     let normals = vec![
         Vec3::new(0.0, 0.0, 1.0),
         Vec3::new(0.0, 0.0, 1.0),
         Vec3::new(0.0, 0.0, 1.0),
         Vec3::new(0.0, 0.0, 1.0),
     ];
-    (vertices, uvs, normals)
+    (vertices, normals)
 }
 
-pub fn create_south_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_south_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(0.5, -0.5, -0.5) + offset,
         Vec3::new(-0.5, -0.5, -0.5) + offset,
         Vec3::new(-0.5, 0.5, -0.5) + offset,
         Vec3::new(0.5, 0.5, -0.5) + offset,
     ];
-    let uvs = vec![
-        Vec2::new(1.0, 0.0),
-        Vec2::new(0.0, 0.0),
-        Vec2::new(0.0, 1.0),
-        Vec2::new(1.0, 1.0),
-    ];
     let normals = vec![
         Vec3::new(0.0, 0.0, -1.0),
         Vec3::new(0.0, 0.0, -1.0),
         Vec3::new(0.0, 0.0, -1.0),
         Vec3::new(0.0, 0.0, -1.0),
     ];
-    (vertices, uvs, normals)
+    (vertices, normals)
 }
 
-pub fn create_west_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_west_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(-0.5, -0.5, -0.5) + offset,
         Vec3::new(-0.5, -0.5, 0.5) + offset,
         Vec3::new(-0.5, 0.5, 0.5) + offset,
         Vec3::new(-0.5, 0.5, -0.5) + offset,
     ];
-    let uvs = vec![
-        Vec2::new(1.0, 0.0),
-        Vec2::new(0.0, 0.0),
-        Vec2::new(0.0, 1.0),
-        Vec2::new(1.0, 1.0),
-    ];
     let normals = vec![
         Vec3::new(-1.0, 0.0, 0.0),
         Vec3::new(-1.0, 0.0, 0.0),
         Vec3::new(-1.0, 0.0, 0.0),
         Vec3::new(-1.0, 0.0, 0.0),
     ];
-    (vertices, uvs, normals)
+    (vertices, normals)
 }
 
-pub fn create_east_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_east_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(0.5, -0.5, 0.5) + offset,
         Vec3::new(0.5, -0.5, -0.5) + offset,
         Vec3::new(0.5, 0.5, -0.5) + offset,
         Vec3::new(0.5, 0.5, 0.5) + offset,
     ];
-    let uvs = vec![
-        Vec2::new(1.0, 0.0),
-        Vec2::new(0.0, 0.0),
-        Vec2::new(0.0, 1.0),
-        Vec2::new(1.0, 1.0),
-    ];
     let normals = vec![
         Vec3::new(1.0, 0.0, 0.0),
         Vec3::new(1.0, 0.0, 0.0),
         Vec3::new(1.0, 0.0, 0.0),
         Vec3::new(1.0, 0.0, 0.0),
     ];
-    (vertices, uvs, normals)
+    (vertices, normals)
 }
 
-pub fn create_top_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_top_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(-0.5, 0.5, 0.5) + offset,
         Vec3::new(0.5, 0.5, 0.5) + offset,
         Vec3::new(0.5, 0.5, -0.5) + offset,
         Vec3::new(-0.5, 0.5, -0.5) + offset,
     ];
-    let uvs = vec![
-        Vec2::new(0.0, 0.0),
-        Vec2::new(1.0, 0.0),
-        Vec2::new(1.0, 1.0),
-        Vec2::new(0.0, 1.0),
-    ];
     let normals = vec![
         Vec3::new(0.0, -1.0, 0.0),
         Vec3::new(0.0, -1.0, 0.0),
         Vec3::new(0.0, -1.0, 0.0),
         Vec3::new(0.0, -1.0, 0.0),
     ];
-    (vertices, uvs, normals)
+    (vertices, normals)
 }
 
-pub fn create_bottom_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
+pub fn create_bottom_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec3>) {
     let vertices = vec![
         Vec3::new(-0.5, -0.5, -0.5) + offset,
         Vec3::new(0.5, -0.5, -0.5) + offset,
         Vec3::new(0.5, -0.5, 0.5) + offset,
         Vec3::new(-0.5, -0.5, 0.5) + offset,
     ];
-    let uvs = vec![
-        Vec2::new(1.0, 1.0),
-        Vec2::new(0.0, 1.0),
-        Vec2::new(0.0, 0.0),
-        Vec2::new(1.0, 0.0),
-    ];
     let normals = vec![
         Vec3::new(0.0, 1.0, 0.0),
         Vec3::new(0.0, 1.0, 0.0),
@@ -164,5 +119,5 @@ pub fn create_bottom_quad(offset: Vec3) -> (Vec<Vec3>, Vec<Vec2>, Vec<Vec3>) {
         Vec3::new(0.0, 1.0, 0.0),
     ];
 
-    (vertices, uvs, normals)
+    (vertices, normals)
 }

@@ -54,11 +54,10 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
         {
             normals.extend_from_slice(norms);
         }
-        if let Some(VertexAttributeValues::Float32x2(texture_coords)) =
-            mesh.attribute(Mesh::ATTRIBUTE_UV_0)
-        {
-            uvs.extend_from_slice(texture_coords);
-        }
+        // TODO now that we have a way to target a texture
+        // we will probably assign these values to some enums or something?
+        // probably material enums but not sure
+        uvs.extend_from_slice(&get_texture(1.0, 2.0));
 
         indices.push(offset);
         indices.push(1 + offset);
@@ -71,13 +70,6 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
         offset += 4;
     }
 
-    // just here to test atlas mapping
-    for uv in uvs.iter_mut() {
-        for element in uv.iter_mut() {
-            *element /= 16.0;
-        }
-    }
-
     // Now you can set the vertices, normals, uvs, and indices for the combined mesh
     combined_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
     combined_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
@@ -85,4 +77,20 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
     combined_mesh.set_indices(Some(Indices::U32(indices)));
 
     combined_mesh
+}
+
+fn get_texture(row: f32, column: f32) -> Vec<[f32; 2]> {
+    let grid_size = 16.0;
+    let mut uvs = Vec::new();
+
+    let left = column / grid_size;
+    let right = (column + 1.0) / grid_size;
+    let bottom = row / grid_size;
+    let top = (row + 1.0) / grid_size;
+    uvs.push([left, bottom]);
+    uvs.push([right, bottom]);
+    uvs.push([right, top]);
+    uvs.push([left, top]);
+
+    uvs
 }
