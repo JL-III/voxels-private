@@ -71,6 +71,13 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
         offset += 4;
     }
 
+    // just here to test atlas mapping
+    for uv in uvs.iter_mut() {
+        for element in uv.iter_mut() {
+            *element /= 16.0;
+        }
+    }
+
     // Now you can set the vertices, normals, uvs, and indices for the combined mesh
     combined_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
     combined_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);

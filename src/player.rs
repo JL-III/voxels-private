@@ -182,6 +182,7 @@ pub fn run_world_gen(
 pub fn run_mesh(
     mut commands: Commands,
     keys: Res<Input<KeyCode>>,
+    asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
@@ -193,6 +194,8 @@ pub fn run_mesh(
         BlockFace::Top,
         BlockFace::Bottom,
     ];
+
+    let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
 
     if keys.just_pressed(KeyCode::M) {
         let mut gen_meshes: Vec<Mesh> = Vec::new();
@@ -209,6 +212,7 @@ pub fn run_mesh(
             mesh: meshes.add(combined_mesh),
             material: materials.add(StandardMaterial {
                 base_color: Color::WHITE,
+                base_color_texture: Some(block_atlas),
                 unlit: false,
                 ..default()
             }),
