@@ -13,6 +13,7 @@ mod block;
 mod command_interface;
 mod coordinates;
 mod main_menu;
+mod element;
 mod mesh_utils;
 mod player;
 mod systems;

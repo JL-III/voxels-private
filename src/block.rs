@@ -1,4 +1,8 @@
+use std::ops::Index;
+
 use bevy::{prelude::*, render::render_resource::PrimitiveTopology};
+
+use crate::element::*;
 
 #[derive(Clone, Copy)]
 pub enum BlockFace {
@@ -8,6 +12,37 @@ pub enum BlockFace {
     West,
     Top,
     Bottom,
+}
+
+#[derive(Component)]
+pub struct Block {
+    pub uv_mapping: UVMapping,
+    pub element: Element,
+}
+
+impl Block {
+    pub fn new(element: Element) -> Self {
+        let uv_mapping = match element {
+            Element::Stone => UVMapping([0.0, 1.0]),
+            Element::Dirt => UVMapping([0.0, 2.0]),
+            Element::Grass => UVMapping([0.0, 3.0]),
+        };
+
+        Self {
+            uv_mapping,
+            element,
+        }
+    }
+}
+
+pub struct UVMapping([f32; 2]);
+
+impl Index<usize> for UVMapping {
+    type Output = f32;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.0[index]
+    }
 }
 
 // i actually think uv mapping will have to exist here since

@@ -9,11 +9,11 @@ use bevy::{
 use bevy_atmosphere::prelude::*;
 
 use crate::{
-    block::{create_quad, BlockFace},
+    block::{create_quad, Block, BlockFace},
     coordinates::CoordinateDisplay,
     mesh_utils::merge_meshes,
     world::{setup_world, Voxel},
-    AppState,
+    AppState, element::Element,
 };
 
 #[derive(Resource, Default)]
@@ -72,8 +72,8 @@ pub fn setup_player(mut commands: Commands) {
                 clear_color: ClearColorConfig::Custom(Color::BLACK),
                 ..Default::default()
             },
-            transform: Transform::from_xyz(-10.0, 10.0, -10.0)
-                .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0)
+                .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
             ..Default::default()
         },
         Player,
@@ -197,29 +197,72 @@ pub fn run_mesh(
 
     let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
 
-    if keys.just_pressed(KeyCode::M) {
+    if keys.just_pressed(KeyCode::Numpad0) {
         let mut gen_meshes: Vec<Mesh> = Vec::new();
+        // TODO we will want to generate this mesh based on a query for blocks?
         for side in block_faces.iter() {
-            gen_meshes.push(create_quad(*side, Vec3::new(0.0, 10.0, 0.0)));
+            gen_meshes.push(create_quad(*side, Vec3::new(-1.0, 0.0, 3.0)));
         }
-        // gen_meshes.push(create_quad(BlockFace::North, Vec3::new(10.0, 10.0, 10.0)));
-        // gen_meshes.push(create_quad(BlockFace::West, Vec3::new(10.0, 10.0, 10.0)));
-        // gen_meshes.push(create_quad(BlockFace::Top, Vec3::new(10.0, 10.0, 10.0)));
 
-        println!("number of generated meshes: {}", gen_meshes.len());
-        let combined_mesh = merge_meshes(gen_meshes);
-        commands.spawn(PbrBundle {
-            mesh: meshes.add(combined_mesh),
-            material: materials.add(StandardMaterial {
-                base_color: Color::WHITE,
-                base_color_texture: Some(block_atlas),
-                unlit: false,
+        let block = Block::new(Element::Stone);
+        let combined_mesh = merge_meshes(gen_meshes, &block);
+        commands.spawn((
+            PbrBundle {
+                mesh: meshes.add(combined_mesh),
+                material: materials.add(StandardMaterial {
+                    base_color_texture: Some(block_atlas),
+                    unlit: false,
+                    ..default()
+                }),
+                transform: Transform { ..default() },
                 ..default()
-            }),
-            transform: Transform { ..default() },
-            ..default()
-        });
-        print!("Created cube?")
+            },
+            block,
+        ));
+    } else if keys.just_pressed(KeyCode::Numpad1) {
+        let mut gen_meshes: Vec<Mesh> = Vec::new();
+        // TODO we will want to generate this mesh based on a query for blocks?
+        for side in block_faces.iter() {
+            gen_meshes.push(create_quad(*side, Vec3::new(0.0, 0.0, 3.0)));
+        }
+
+        let block = Block::new(Element::Dirt);
+        let combined_mesh = merge_meshes(gen_meshes, &block);
+        commands.spawn((
+            PbrBundle {
+                mesh: meshes.add(combined_mesh),
+                material: materials.add(StandardMaterial {
+                    base_color_texture: Some(block_atlas),
+                    unlit: false,
+                    ..default()
+                }),
+                transform: Transform { ..default() },
+                ..default()
+            },
+            block,
+        ));
+    } else if keys.just_pressed(KeyCode::Numpad2) {
+        let mut gen_meshes: Vec<Mesh> = Vec::new();
+        // TODO we will want to generate this mesh based on a query for blocks?
+        for side in block_faces.iter() {
+            gen_meshes.push(create_quad(*side, Vec3::new(1.0, 0.0, 3.0)));
+        }
+
+        let block = Block::new(Element::Grass);
+        let combined_mesh = merge_meshes(gen_meshes, &block);
+        commands.spawn((
+            PbrBundle {
+                mesh: meshes.add(combined_mesh),
+                material: materials.add(StandardMaterial {
+                    base_color_texture: Some(block_atlas),
+                    unlit: false,
+                    ..default()
+                }),
+                transform: Transform { ..default() },
+                ..default()
+            },
+            block,
+        ));
     }
 }
 

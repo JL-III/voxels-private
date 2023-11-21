@@ -5,6 +5,8 @@ use bevy::render::render_resource::PrimitiveTopology;
 use std::hash::Hash;
 use std::hash::Hasher;
 
+use crate::block::Block;
+
 #[derive(Clone)]
 struct VertexData {
     position: Vec3,
@@ -34,7 +36,7 @@ fn hash_float_array<H: Hasher>(arr: &[f32], state: &mut H) {
     }
 }
 
-pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
+pub fn merge_meshes(meshes: Vec<Mesh>, block: &Block) -> Mesh {
     let mut combined_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut normals: Vec<[f32; 3]> = Vec::new();
@@ -54,10 +56,8 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
         {
             normals.extend_from_slice(norms);
         }
-        // TODO now that we have a way to target a texture
-        // we will probably assign these values to some enums or something?
-        // probably material enums but not sure
-        uvs.extend_from_slice(&get_texture(8.0, 6.0));
+
+        uvs.extend_from_slice(&get_texture(block.uv_mapping[0], block.uv_mapping[1]));
 
         indices.push(offset);
         indices.push(1 + offset);
