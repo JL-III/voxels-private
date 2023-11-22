@@ -77,11 +77,6 @@ pub fn setup_player(mut commands: Commands) {
         Player,
         AtmosphereCamera::default(),
     ));
-
-    commands.spawn(PointLightBundle {
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
-        ..Default::default()
-    });
 }
 
 pub fn player_move(

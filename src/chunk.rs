@@ -141,10 +141,19 @@ fn render(
 
 fn player_move_event_listener(mut player_move_event_reader: EventReader<PlayerMoveEvent>) {
     for event in player_move_event_reader.read() {
-        println!(
-            "starting position: {}, final position: {}",
-            event.starting_position, event.final_position
-        );
+        // println!(
+        //     "starting position: {}, final position: {}",
+        //     event.starting_position, event.final_position
+        // );
+        let starting_chunk_x = (event.starting_position.x / 16.0).floor() as i32;
+        let starting_chunk_z = (event.starting_position.z / 16.0).floor() as i32;
+
+        let final_chunk_x = (event.final_position.x / 16.0).floor() as i32;
+        let final_chunk_z = (event.final_position.z / 16.0).floor() as i32;
+
+        if starting_chunk_x != final_chunk_x || starting_chunk_z != final_chunk_z {
+            println!("Inside chunk: x: {} z: {}", final_chunk_x, final_chunk_z);
+        }
     }
 }
 
