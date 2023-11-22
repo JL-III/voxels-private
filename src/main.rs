@@ -1,5 +1,6 @@
 #![deny(clippy::unwrap_used)]
 use bevy::prelude::*;
+use chunk::ChunkPlugin;
 use player::PlayerPlugin;
 
 use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
@@ -10,6 +11,7 @@ use systems::*;
 use world::WorldPlugin;
 
 mod block;
+mod chunk;
 mod command_interface;
 mod coordinates;
 mod element;
@@ -27,6 +29,7 @@ fn main() {
         .add_plugins(ScreenFrameDiagnosticsPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(WorldPlugin)
+        .add_plugins(ChunkPlugin)
         .add_plugins(CoordinatePlugin)
         .add_plugins(MainMenuPlugin)
         .add_plugins(CommandPlugin)

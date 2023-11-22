@@ -5,8 +5,6 @@ use bevy::render::render_resource::PrimitiveTopology;
 use std::hash::Hash;
 use std::hash::Hasher;
 
-use crate::block::Block;
-
 #[derive(Clone)]
 struct VertexData {
     position: Vec3,
@@ -36,7 +34,9 @@ fn hash_float_array<H: Hasher>(arr: &[f32], state: &mut H) {
     }
 }
 
-pub fn merge_meshes(meshes: Vec<Mesh>, block: &Block) -> Mesh {
+// at this point we want the meshes to be finished with construction and only deal with merging
+
+pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
     let mut combined_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut normals: Vec<[f32; 3]> = Vec::new();
@@ -55,8 +55,13 @@ pub fn merge_meshes(meshes: Vec<Mesh>, block: &Block) -> Mesh {
         {
             normals.extend_from_slice(norms);
         }
+        if let Some(VertexAttributeValues::Float32x2(texture_coords)) =
+            mesh.attribute(Mesh::ATTRIBUTE_UV_0)
+        {
+            uvs.extend_from_slice(texture_coords);
+        }
 
-        uvs.extend_from_slice(&get_texture(block.uv_mapping[0], block.uv_mapping[1]));
+        // uvs.extend_from_slice(&get_texture(block.uv_mapping[0], block.uv_mapping[1]));
 
         indices.push(offset);
         indices.push(1 + offset);
@@ -74,20 +79,4 @@ pub fn merge_meshes(meshes: Vec<Mesh>, block: &Block) -> Mesh {
     combined_mesh.set_indices(Some(Indices::U32(indices)));
 
     combined_mesh
-}
-
-pub fn get_texture(row: f32, column: f32) -> Vec<[f32; 2]> {
-    let grid_size = 16.0;
-    let mut uvs = Vec::new();
-
-    let left = column / grid_size;
-    let right = (column + 1.0) / grid_size;
-    let bottom = row / grid_size;
-    let top = (row + 1.0) / grid_size;
-    uvs.push([left, bottom]);
-    uvs.push([right, bottom]);
-    uvs.push([right, top]);
-    uvs.push([left, top]);
-
-    uvs
 }

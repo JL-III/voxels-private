@@ -9,10 +9,7 @@ use bevy::{
 use bevy_atmosphere::prelude::*;
 
 use crate::{
-    block::{create_quad, Block, BlockFace},
     coordinates::CoordinateDisplay,
-    element::Element,
-    mesh_utils::merge_meshes,
     world::{setup_world, Voxel},
     AppState,
 };
@@ -180,154 +177,6 @@ pub fn run_world_gen(
     }
 }
 
-pub fn run_mesh(
-    mut commands: Commands,
-    keys: Res<Input<KeyCode>>,
-    asset_server: Res<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    let block_faces = [
-        BlockFace::North,
-        BlockFace::South,
-        BlockFace::West,
-        BlockFace::East,
-        BlockFace::Top,
-        BlockFace::Bottom,
-    ];
-
-    let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
-
-    if keys.just_pressed(KeyCode::Numpad0) {
-        let mut gen_meshes: Vec<Mesh> = Vec::new();
-        for side in block_faces.iter() {
-            gen_meshes.push(create_quad(*side, Vec3::new(-1.0, 0.0, 3.0)));
-        }
-
-        let block = Block::new(Element::Stone);
-        let combined_mesh = merge_meshes(gen_meshes, &block);
-        commands.spawn((
-            PbrBundle {
-                mesh: meshes.add(combined_mesh),
-                material: materials.add(StandardMaterial {
-                    base_color_texture: Some(block_atlas),
-                    unlit: false,
-                    ..default()
-                }),
-                transform: Transform { ..default() },
-                ..default()
-            },
-            block,
-        ));
-    } else if keys.just_pressed(KeyCode::Numpad1) {
-        let mut gen_meshes: Vec<Mesh> = Vec::new();
-        for side in block_faces.iter() {
-            gen_meshes.push(create_quad(*side, Vec3::new(0.0, 0.0, 3.0)));
-        }
-
-        let block = Block::new(Element::Dirt);
-        let combined_mesh = merge_meshes(gen_meshes, &block);
-        commands.spawn((
-            PbrBundle {
-                mesh: meshes.add(combined_mesh),
-                material: materials.add(StandardMaterial {
-                    base_color_texture: Some(block_atlas),
-                    unlit: false,
-                    ..default()
-                }),
-                transform: Transform { ..default() },
-                ..default()
-            },
-            block,
-        ));
-    } else if keys.just_pressed(KeyCode::Numpad2) {
-        let mut gen_meshes: Vec<Mesh> = Vec::new();
-        for side in block_faces.iter() {
-            gen_meshes.push(create_quad(*side, Vec3::new(1.0, 0.0, 3.0)));
-        }
-
-        let block = Block::new(Element::Grass);
-        let combined_mesh = merge_meshes(gen_meshes, &block);
-        commands.spawn((
-            PbrBundle {
-                mesh: meshes.add(combined_mesh),
-                material: materials.add(StandardMaterial {
-                    base_color_texture: Some(block_atlas),
-                    unlit: false,
-                    ..default()
-                }),
-                transform: Transform { ..default() },
-                ..default()
-            },
-            block,
-        ));
-    } else if keys.just_pressed(KeyCode::Numpad3) {
-        let width = 16;
-        let length = 16;
-        let height = 256;
-
-        let mut gen_meshes: Vec<Mesh> = Vec::new();
-
-        for x in 0..width {
-            for z in 0..length {
-                for y in 0..height {
-
-                    if x == width - 1 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::East,
-                            Vec3::new(x as f32, y as f32, z as f32),
-                        ));
-                    }
-                    if z == length - 1 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::North,
-                            Vec3::new(x as f32, y as f32, z as f32),
-                        ));
-                    }
-                    if y == height - 1 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::Top,
-                            Vec3::new(x as f32, y as f32, z as f32),
-                        ));
-                    }
-                    if y == 0 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::Bottom,
-                            Vec3::new(x as f32, y as f32, z as f32),
-                        ));
-                    }
-                    if z == 0 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::South,
-                            Vec3::new(x as f32, y as f32, z as f32),
-                        ));
-                    }
-                    if x == 0 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::West,
-                            Vec3::new(x as f32, y as f32, z as f32),
-                        ));
-                    }
-
-                    
-                }
-            }
-        }
-        let block = Block::new(Element::Stone);
-        let combined_mesh = merge_meshes(gen_meshes, &block);
-        commands.spawn((PbrBundle {
-            mesh: meshes.add(combined_mesh.clone()),
-            material: materials.add(StandardMaterial {
-                base_color_texture: Some(block_atlas.clone()),
-                unlit: false,
-                ..default()
-            }),
-            transform: Transform { ..default() },
-            ..default()
-        },));
-    }
-}
-
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -336,7 +185,7 @@ impl Plugin for PlayerPlugin {
             .init_resource::<MovementSettings>()
             .add_systems(Startup, setup_player)
             .add_systems(Startup, initial_grab_cursor)
-            .add_systems(Update, run_mesh)
+            // .add_systems(Update, run_mesh)
             .add_systems(Update, run_world_gen.run_if(in_state(AppState::Game)))
             .add_systems(
                 FixedUpdate,
