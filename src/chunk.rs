@@ -9,8 +9,9 @@ use bevy::{
     ecs::{
         component::Component,
         entity::Entity,
+        event::{Event, EventReader, EventWriter},
         query::With,
-        system::{Commands, Query, Res, ResMut}, event::{EventWriter, Event, EventReader},
+        system::{Commands, Query, Res, ResMut},
     },
     math::Vec3,
     pbr::{PbrBundle, StandardMaterial},
@@ -37,7 +38,6 @@ fn setup(mut commands: Commands, mut chunk_create_event_write: EventWriter<Chunk
     for x in 0..CHUNK_WIDTH {
         for y in 0..CHUNK_HEIGHT {
             for z in 0..CHUNK_DEPTH {
-                // Initialize each block
                 chunk.blocks[x][y][z] = Block::new(get_random_element(y));
             }
         }
@@ -151,9 +151,9 @@ pub struct ChunkPlugin;
 
 impl Plugin for ChunkPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app
-        .add_event::<ChunkCreatedEvent>()
-        .add_systems(Startup, setup).add_systems(Update, render);
+        app.add_event::<ChunkCreatedEvent>()
+            .add_systems(Startup, setup)
+            .add_systems(Update, render);
     }
 }
 
