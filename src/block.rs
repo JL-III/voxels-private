@@ -38,12 +38,6 @@ impl Block {
 #[derive(Component)]
 pub struct UVMapping([f32; 2]);
 
-// impl UVMapping {
-//     pub fn new(mapping: [f32; 2]) -> Self {
-//         Self(mapping)
-//     }
-// }
-
 #[derive(Component)]
 pub struct BlockElement(Element);
 

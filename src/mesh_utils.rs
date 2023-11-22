@@ -45,7 +45,6 @@ pub fn merge_meshes(meshes: Vec<Mesh>, block: &Block) -> Mesh {
 
     let mut offset = 0;
     for mesh in meshes {
-        // Gather the vertex attributes for positions, normals, and uvs
         if let Some(VertexAttributeValues::Float32x3(positions)) =
             mesh.attribute(Mesh::ATTRIBUTE_POSITION)
         {
@@ -66,11 +65,9 @@ pub fn merge_meshes(meshes: Vec<Mesh>, block: &Block) -> Mesh {
         indices.push(3 + offset);
         indices.push(offset);
 
-        // Increment the offset by the number of vertices in the current quad (which should be 4 for a quad)
         offset += 4;
     }
 
-    // Now you can set the vertices, normals, uvs, and indices for the combined mesh
     combined_mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
     combined_mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
     combined_mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);

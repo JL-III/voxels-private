@@ -200,7 +200,6 @@ pub fn run_mesh(
 
     if keys.just_pressed(KeyCode::Numpad0) {
         let mut gen_meshes: Vec<Mesh> = Vec::new();
-        // TODO we will want to generate this mesh based on a query for blocks?
         for side in block_faces.iter() {
             gen_meshes.push(create_quad(*side, Vec3::new(-1.0, 0.0, 3.0)));
         }
@@ -222,7 +221,6 @@ pub fn run_mesh(
         ));
     } else if keys.just_pressed(KeyCode::Numpad1) {
         let mut gen_meshes: Vec<Mesh> = Vec::new();
-        // TODO we will want to generate this mesh based on a query for blocks?
         for side in block_faces.iter() {
             gen_meshes.push(create_quad(*side, Vec3::new(0.0, 0.0, 3.0)));
         }
@@ -244,8 +242,6 @@ pub fn run_mesh(
         ));
     } else if keys.just_pressed(KeyCode::Numpad2) {
         let mut gen_meshes: Vec<Mesh> = Vec::new();
-        // TODO we will want to generate this mesh based on a query for blocks?
-
         for side in block_faces.iter() {
             gen_meshes.push(create_quad(*side, Vec3::new(1.0, 0.0, 3.0)));
         }
@@ -272,18 +268,11 @@ pub fn run_mesh(
 
         // TODO we will want to generate this mesh based on a query for blocks?
 
-        // for side in block_faces.iter() {
-        //     gen_meshes.push(create_quad(*side, Vec3::new(1.0, 0.0, 3.0)));
-        // }
-
         for x in 0..width {
             for z in 0..length {
                 for y in 0..height {
                     let mut gen_meshes: Vec<Mesh> = Vec::new();
 
-                    // for side in block_faces.iter() {
-                    //     gen_meshes.push(create_quad(*side, Vec3::new(x as f32, y as f32, z as f32)));
-                    // }
                     if x == width - 1 {
                         gen_meshes.push(create_quad(
                             BlockFace::East,
