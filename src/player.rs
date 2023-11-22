@@ -86,14 +86,19 @@ pub fn setup_player(mut commands: Commands) {
 
 pub fn player_move(
     keyboard_input: Res<Input<KeyCode>>,
+    mut player_move_event_writer: EventWriter<PlayerMoveEvent>,
     time: Res<Time>,
     window_query: Query<&Window, With<PrimaryWindow>>,
     settings: Res<MovementSettings>,
-    mut query: Query<&mut Transform, With<Player>>,
+    mut transform_query: Query<&mut Transform, With<Player>>,
     mut coordinate_display_query: Query<&mut Text, With<CoordinateDisplay>>,
 ) {
     if let Ok(window) = window_query.get_single() {
-        for mut transform in query.iter_mut() {
+        for mut transform in transform_query.iter_mut() {
+            let mut player_move_event = PlayerMoveEvent {
+                starting_position: transform.translation,
+                final_position: transform.translation,
+            };
             let mut velocity = Vec3::ZERO;
             let local_z = transform.local_z();
             let forward = Vec3::new(local_z.x, 0., local_z.z);
@@ -125,6 +130,10 @@ pub fn player_move(
                     transform.translation.z as i32,
                     transform.rotation
                 );
+            }
+            player_move_event.final_position = transform.translation;
+            if player_move_event.starting_position != player_move_event.final_position {
+                player_move_event_writer.send(player_move_event);
             }
         }
     } else {
@@ -183,6 +192,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<InputState>()
             .init_resource::<MovementSettings>()
+            .add_event::<PlayerMoveEvent>()
             .add_systems(Startup, setup_player)
             .add_systems(Startup, initial_grab_cursor)
             .add_systems(Update, run_world_gen.run_if(in_state(AppState::Game)))
@@ -193,4 +203,10 @@ impl Plugin for PlayerPlugin {
             .add_systems(OnEnter(AppState::Game), grab_cursor)
             .add_systems(OnExit(AppState::Game), release_cursor);
     }
+}
+
+#[derive(Event)]
+pub struct PlayerMoveEvent {
+    pub starting_position: Vec3,
+    pub final_position: Vec3,
 }

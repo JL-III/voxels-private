@@ -1,7 +1,7 @@
 use crate::{
     block::{create_quad, Block, BlockFace},
     element::Element,
-    mesh_utils::merge_meshes,
+    mesh_utils::merge_meshes, player::PlayerMoveEvent,
 };
 use bevy::{
     app::{Plugin, Startup, Update},
@@ -138,6 +138,12 @@ fn render(
     }
 }
 
+fn player_move_event_listener(mut player_move_event_reader: EventReader<PlayerMoveEvent>) {
+    for event in player_move_event_reader.read() {
+        println!("starting position: {}, final position: {}", event.starting_position, event.final_position);
+    }
+}
+
 fn get_random_element(y: usize) -> Element {
     match y {
         _ if y == 10 => Element::Grass,
@@ -153,7 +159,8 @@ impl Plugin for ChunkPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_event::<ChunkCreatedEvent>()
             .add_systems(Startup, setup)
-            .add_systems(Update, render);
+            .add_systems(Update, render)
+            .add_systems(Update, player_move_event_listener);
     }
 }
 
