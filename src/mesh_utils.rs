@@ -34,8 +34,6 @@ fn hash_float_array<H: Hasher>(arr: &[f32], state: &mut H) {
     }
 }
 
-// at this point we want the meshes to be finished with construction and only deal with merging
-
 pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
     let mut combined_mesh = Mesh::new(PrimitiveTopology::TriangleList);
     let mut vertices: Vec<[f32; 3]> = Vec::new();
@@ -60,8 +58,6 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
         {
             uvs.extend_from_slice(texture_coords);
         }
-
-        // uvs.extend_from_slice(&get_texture(block.uv_mapping[0], block.uv_mapping[1]));
 
         indices.push(offset);
         indices.push(1 + offset);

@@ -185,7 +185,6 @@ impl Plugin for PlayerPlugin {
             .init_resource::<MovementSettings>()
             .add_systems(Startup, setup_player)
             .add_systems(Startup, initial_grab_cursor)
-            // .add_systems(Update, run_mesh)
             .add_systems(Update, run_world_gen.run_if(in_state(AppState::Game)))
             .add_systems(
                 FixedUpdate,
