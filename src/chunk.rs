@@ -10,9 +10,8 @@ use bevy::{
         component::Component,
         entity::Entity,
         query::With,
-        system::{Commands, Query, Res, ResMut},
+        system::{Commands, Query, Res, ResMut}, event::{EventWriter, Event, EventReader},
     },
-    input::{keyboard::KeyCode, Input},
     math::Vec3,
     pbr::{PbrBundle, StandardMaterial},
     prelude::default,
@@ -30,7 +29,7 @@ pub struct Chunk {
     blocks: [[[Block; CHUNK_WIDTH]; CHUNK_HEIGHT]; CHUNK_DEPTH],
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, mut chunk_create_event_write: EventWriter<ChunkCreatedEvent>) {
     let mut chunk = Chunk {
         blocks: [[[Block::default(); CHUNK_WIDTH]; CHUNK_HEIGHT]; CHUNK_DEPTH],
     };
@@ -51,19 +50,19 @@ fn setup(mut commands: Commands) {
             ..Default::default()
         },
     ));
-    println!("Finished chunk gen");
+    chunk_create_event_write.send_default();
 }
 
 fn render(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    keyboard_input: Res<Input<KeyCode>>,
+    mut chunk_create_event_reader: EventReader<ChunkCreatedEvent>,
     asset_server: Res<AssetServer>,
     transform_query: Query<&Transform, With<Chunk>>,
     chunk_query: Query<(Entity, &Chunk)>,
 ) {
-    if keyboard_input.just_released(KeyCode::Numpad9) {
+    for _chunk_event in chunk_create_event_reader.read() {
         let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
 
         for transform in transform_query.iter() {
@@ -152,6 +151,17 @@ pub struct ChunkPlugin;
 
 impl Plugin for ChunkPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(Startup, setup).add_systems(Update, render);
+        app
+        .add_event::<ChunkCreatedEvent>()
+        .add_systems(Startup, setup).add_systems(Update, render);
+    }
+}
+
+#[derive(Event)]
+pub struct ChunkCreatedEvent;
+
+impl Default for ChunkCreatedEvent {
+    fn default() -> Self {
+        Self
     }
 }
