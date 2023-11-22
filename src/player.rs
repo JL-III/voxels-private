@@ -266,12 +266,11 @@ pub fn run_mesh(
         let length = 16;
         let height = 16;
 
-        // TODO we will want to generate this mesh based on a query for blocks?
+        let mut gen_meshes: Vec<Mesh> = Vec::new();
 
         for x in 0..width {
             for z in 0..length {
                 for y in 0..height {
-                    let mut gen_meshes: Vec<Mesh> = Vec::new();
 
                     if x == width - 1 {
                         gen_meshes.push(create_quad(
@@ -310,21 +309,22 @@ pub fn run_mesh(
                         ));
                     }
 
-                    let block = Block::new(Element::Grass);
-                    let combined_mesh = merge_meshes(gen_meshes, &block);
-                    commands.spawn((PbrBundle {
-                        mesh: meshes.add(combined_mesh.clone()),
-                        material: materials.add(StandardMaterial {
-                            base_color_texture: Some(block_atlas.clone()),
-                            unlit: false,
-                            ..default()
-                        }),
-                        transform: Transform { ..default() },
-                        ..default()
-                    },));
+                    
                 }
             }
         }
+        let block = Block::new(Element::Stone);
+        let combined_mesh = merge_meshes(gen_meshes, &block);
+        commands.spawn((PbrBundle {
+            mesh: meshes.add(combined_mesh.clone()),
+            material: materials.add(StandardMaterial {
+                base_color_texture: Some(block_atlas.clone()),
+                unlit: false,
+                ..default()
+            }),
+            transform: Transform { ..default() },
+            ..default()
+        },));
     }
 }
 
