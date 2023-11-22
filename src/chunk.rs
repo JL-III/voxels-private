@@ -1,7 +1,8 @@
 use crate::{
     block::{create_quad, Block, BlockFace},
     element::Element,
-    mesh_utils::merge_meshes, player::PlayerMoveEvent,
+    mesh_utils::merge_meshes,
+    player::PlayerMoveEvent,
 };
 use bevy::{
     app::{Plugin, Startup, Update},
@@ -140,7 +141,10 @@ fn render(
 
 fn player_move_event_listener(mut player_move_event_reader: EventReader<PlayerMoveEvent>) {
     for event in player_move_event_reader.read() {
-        println!("starting position: {}, final position: {}", event.starting_position, event.final_position);
+        println!(
+            "starting position: {}, final position: {}",
+            event.starting_position, event.final_position
+        );
     }
 }
 
