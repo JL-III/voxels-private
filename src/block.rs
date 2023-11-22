@@ -17,7 +17,7 @@ pub enum BlockFace {
 #[derive(Component)]
 pub struct Block {
     pub uv_mapping: UVMapping,
-    pub element: Element,
+    pub element: BlockElement,
 }
 
 impl Block {
@@ -30,12 +30,22 @@ impl Block {
 
         Self {
             uv_mapping,
-            element,
+            element: BlockElement(element),
         }
     }
 }
 
+#[derive(Component)]
 pub struct UVMapping([f32; 2]);
+
+// impl UVMapping {
+//     pub fn new(mapping: [f32; 2]) -> Self {
+//         Self(mapping)
+//     }
+// }
+
+#[derive(Component)]
+pub struct BlockElement(Element);
 
 impl Index<usize> for UVMapping {
     type Output = f32;

@@ -79,7 +79,7 @@ pub fn merge_meshes(meshes: Vec<Mesh>, block: &Block) -> Mesh {
     combined_mesh
 }
 
-fn get_texture(row: f32, column: f32) -> Vec<[f32; 2]> {
+pub fn get_texture(row: f32, column: f32) -> Vec<[f32; 2]> {
     let grid_size = 16.0;
     let mut uvs = Vec::new();
 
