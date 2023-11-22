@@ -264,7 +264,7 @@ pub fn run_mesh(
     } else if keys.just_pressed(KeyCode::Numpad3) {
         let width = 16;
         let length = 16;
-        let height = 16;
+        let height = 256;
 
         let mut gen_meshes: Vec<Mesh> = Vec::new();
 
