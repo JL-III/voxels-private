@@ -19,7 +19,6 @@ impl Plugin for CommandPlugin {
         app.add_event::<CommandDispatchEvent>()
             .add_systems(OnEnter(AppState::Command), spawn_command_interface)
             .add_systems(OnExit(AppState::Command), despawn_command_interface)
-            // .add_systems(Update, command_listener)
             .add_systems(
                 Update,
                 update_command_interface.run_if(in_state(AppState::Command)),

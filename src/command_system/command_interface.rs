@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::app_state::state::AppState;
+
 use super::events::CommandDispatchEvent;
 
 #[derive(Component)]
@@ -21,21 +23,20 @@ pub fn despawn_command_interface(
 }
 
 pub fn update_command_interface(
+    mut next_app_state: ResMut<NextState<AppState>>,
     mut event_reader_char: EventReader<ReceivedCharacter>,
     mut command_dispatch_event_writer: EventWriter<CommandDispatchEvent>,
     keyboard_input: Res<Input<KeyCode>>,
     mut string: Local<String>,
     mut command_interface_query: Query<&mut Text, With<CommandInterface>>,
 ) {
-    //change this later, we are forcing a slash to give user feedback
-    //having issues making the background appear even when the string is empty.
-
     if let Some(key) = keyboard_input.get_just_pressed().next() {
         match key {
             KeyCode::Return | KeyCode::NumpadEnter => {
                 command_dispatch_event_writer.send(CommandDispatchEvent {
                     command: string.to_string(),
                 });
+                next_app_state.set(AppState::Game);
                 string.clear();
             }
             KeyCode::Back => {

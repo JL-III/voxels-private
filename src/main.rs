@@ -1,5 +1,5 @@
 #![deny(clippy::unwrap_used)]
-use app_state::{state::AppState, plugin::AppStatePlugin};
+use app_state::{plugin::AppStatePlugin, state::AppState};
 use bevy::prelude::*;
 
 use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};

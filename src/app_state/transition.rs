@@ -7,8 +7,17 @@ pub fn transition_to_command_state(
     app_state: Res<State<AppState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Slash) && *app_state.get() == AppState::Game {
-        next_app_state.set(AppState::Command);
+    // transition to command state can only occur when someone is playing the game
+    if *app_state.get() != AppState::Game {
+        return;
+    };
+    if let Some(key) = keyboard_input.get_just_pressed().next() {
+        match key {
+            KeyCode::Slash | KeyCode::T => {
+                next_app_state.set(AppState::Command);
+            }
+            _ => {}
+        }
     }
 }
 
@@ -36,6 +45,5 @@ pub fn transition_to_pause_state(
 ) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         next_app_state.set(AppState::Paused);
-        println!("Entered AppState::Paused");
     }
 }

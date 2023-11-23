@@ -22,7 +22,7 @@ impl Plugin for WorldPlugin {
             ..default()
         })) // Default Atmosphere material, we can edit it to simulate another planet
         .insert_resource(CycleTimer(Timer::new(
-            Duration::from_millis(50), // Update our atmosphere every 50ms (in a real game, this would be much slower, but for the sake of an example we use a faster update)
+            Duration::from_millis(50),
             TimerMode::Repeating,
         )))
         .add_plugins((AtmospherePlugin,))

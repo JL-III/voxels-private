@@ -6,5 +6,4 @@ pub enum AppState {
     Command,
     #[default]
     Game,
-    // GameOver,
 }
