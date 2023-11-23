@@ -14,7 +14,7 @@ pub enum BlockFace {
     Bottom,
 }
 
-#[derive(Component, Clone, Copy, Debug)]
+#[derive(Component, Clone, Copy, Debug, PartialEq)]
 pub struct Block {
     pub uv_mapping: UVMapping,
     pub element: Element,
@@ -45,7 +45,7 @@ impl Block {
     }
 }
 
-#[derive(Component, Copy, Debug)]
+#[derive(Component, Copy, Debug, PartialEq)]
 pub struct UVMapping(pub [f32; 2]);
 
 impl Clone for UVMapping {

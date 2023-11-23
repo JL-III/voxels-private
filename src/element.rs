@@ -1,4 +1,4 @@
-#[derive(Copy, Debug)]
+#[derive(Copy, Debug, PartialEq)]
 pub enum Element {
     Air,
     Dirt,
