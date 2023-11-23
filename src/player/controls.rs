@@ -9,11 +9,10 @@ use bevy::{
 use bevy_atmosphere::prelude::*;
 
 use crate::{
-    command_interface::CommandDispatchEvent,
-    coordinates::CoordinateDisplay,
-    world::{setup_world, Voxel},
-    AppState,
+    command_system::events::CommandDispatchEvent, coordinate_system::coordinates::CoordinateDisplay,
 };
+
+use super::events::PlayerMoveEvent;
 
 #[derive(Resource, Default)]
 pub struct InputState {
@@ -40,7 +39,7 @@ impl Default for MovementSettings {
 #[derive(Component)]
 pub struct Player;
 
-fn grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
+pub fn grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
     if let Ok(mut window) = window_query.get_single_mut() {
         window.cursor.grab_mode = CursorGrabMode::Confined;
         window.cursor.visible = false;
@@ -48,7 +47,7 @@ fn grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
     }
 }
 
-fn release_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
+pub fn release_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
     if let Ok(mut window) = window_query.get_single_mut() {
         window.cursor.grab_mode = CursorGrabMode::None;
         window.cursor.visible = true;
@@ -168,45 +167,6 @@ pub fn player_look(
             }
         }
     }
-}
-
-pub fn run_world_gen(
-    keys: Res<Input<KeyCode>>,
-    commands: Commands,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<StandardMaterial>>,
-    block_query: Query<Entity, With<Voxel>>,
-) {
-    if keys.just_pressed(KeyCode::E) {
-        setup_world(commands, meshes, materials, block_query);
-    }
-}
-
-pub struct PlayerPlugin;
-
-impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<InputState>()
-            .init_resource::<MovementSettings>()
-            .add_event::<PlayerMoveEvent>()
-            .add_systems(Update, speed_command)
-            .add_systems(Update, teleport_command)
-            .add_systems(Startup, setup_player)
-            .add_systems(Startup, initial_grab_cursor)
-            .add_systems(Update, run_world_gen.run_if(in_state(AppState::Game)))
-            .add_systems(
-                FixedUpdate,
-                (player_move, player_look).run_if(in_state(AppState::Game)),
-            )
-            .add_systems(OnEnter(AppState::Game), grab_cursor)
-            .add_systems(OnExit(AppState::Game), release_cursor);
-    }
-}
-
-#[derive(Event)]
-pub struct PlayerMoveEvent {
-    pub starting_position: Vec3,
-    pub final_position: Vec3,
 }
 
 pub fn speed_command(

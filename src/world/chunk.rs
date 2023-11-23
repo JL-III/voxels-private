@@ -1,15 +1,12 @@
 use crate::{
-    block::{create_quad, Block, BlockFace},
-    element::Element,
-    mesh_utils::merge_meshes,
-    player::PlayerMoveEvent,
+    player::events::PlayerMoveEvent,
+    world::block::{create_quad, Block, BlockFace},
 };
 use bevy::{
-    app::{Plugin, Update},
     asset::{AssetServer, Assets, Handle},
     ecs::{
         component::Component,
-        event::{Event, EventReader, EventWriter},
+        event::{EventReader, EventWriter},
         system::{Commands, Res, ResMut, Resource},
     },
     math::Vec3,
@@ -17,6 +14,12 @@ use bevy::{
     prelude::default,
     render::{mesh::Mesh, texture::Image},
     transform::{components::Transform, TransformBundle},
+};
+
+use super::{
+    element::Element,
+    events::{ChunkCreatedEvent, ChunkEnterEvent},
+    mesh_utils::merge_meshes,
 };
 
 const CHUNK_WIDTH: usize = 16;
@@ -30,7 +33,7 @@ pub struct Chunk {
     blocks: [[[Block; CHUNK_WIDTH]; CHUNK_HEIGHT]; CHUNK_DEPTH],
 }
 
-fn chunk_enter_listener(
+pub fn chunk_enter_listener(
     mut chunk_registry: ResMut<ChunkRegistry>,
     mut commands: Commands,
     mut chunk_enter_event_reader: EventReader<ChunkEnterEvent>,
@@ -54,7 +57,13 @@ fn chunk_enter_listener(
             commands.spawn((
                 chunk,
                 TransformBundle {
-                    local: { Transform::from_xyz(chunk.chunk_x as f32, 0.0, chunk.chunk_z as f32) },
+                    local: {
+                        Transform::from_xyz(
+                            chunk.chunk_x as f32 - 0.5,
+                            0.0,
+                            chunk.chunk_z as f32 - 0.5,
+                        )
+                    },
                     ..Default::default()
                 },
             ));
@@ -63,7 +72,7 @@ fn chunk_enter_listener(
     }
 }
 
-fn render(
+pub fn render(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -91,7 +100,7 @@ fn render(
     }
 }
 
-fn player_move_event_listener(
+pub fn player_move_event_listener(
     mut player_move_event_reader: EventReader<PlayerMoveEvent>,
     mut enter_chunk_event_writer: EventWriter<ChunkEnterEvent>,
 ) {
@@ -175,32 +184,6 @@ fn get_random_element(y: usize) -> Element {
         _ if y <= 5 => Element::Stone,
         _ => Element::Air,
     }
-}
-
-pub struct ChunkPlugin;
-
-impl Plugin for ChunkPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
-        app.insert_resource(ChunkRegistry {
-            chunks: Vec::<Chunk>::new(),
-        })
-        .add_event::<ChunkCreatedEvent>()
-        .add_event::<ChunkEnterEvent>()
-        .add_systems(Update, chunk_enter_listener)
-        .add_systems(Update, render)
-        .add_systems(Update, player_move_event_listener);
-    }
-}
-
-#[derive(Event)]
-pub struct ChunkCreatedEvent {
-    pub chunk: Chunk,
-}
-
-#[derive(Event)]
-pub struct ChunkEnterEvent {
-    pub chunk_x: isize,
-    pub chunk_z: isize,
 }
 
 #[derive(Resource)]

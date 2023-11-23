@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::AppState;
+use super::state::AppState;
 
 pub fn transition_to_command_state(
     keyboard_input: Res<Input<KeyCode>>,
@@ -9,7 +9,6 @@ pub fn transition_to_command_state(
 ) {
     if keyboard_input.just_pressed(KeyCode::Slash) && *app_state.get() == AppState::Game {
         next_app_state.set(AppState::Command);
-        println!("Entered AppState::Command");
     }
 }
 
@@ -22,7 +21,6 @@ pub fn transition_to_game_state(
         match *app_state.get() {
             AppState::Paused => {
                 next_app_state.set(AppState::Game);
-                println!("Entered AppState::Game");
             }
             AppState::Command => {
                 next_app_state.set(AppState::Game);

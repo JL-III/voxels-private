@@ -2,7 +2,7 @@ use std::ops::Index;
 
 use bevy::{prelude::*, render::render_resource::PrimitiveTopology};
 
-use crate::element::*;
+use super::element::Element;
 
 #[derive(Clone, Copy)]
 pub enum BlockFace {

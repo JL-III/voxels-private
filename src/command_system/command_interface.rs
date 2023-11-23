@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::AppState;
+use super::events::CommandDispatchEvent;
 
 #[derive(Component)]
 pub struct CommandInterface {}
@@ -29,13 +29,10 @@ pub fn update_command_interface(
 ) {
     //change this later, we are forcing a slash to give user feedback
     //having issues making the background appear even when the string is empty.
-    if string.len() == 0 {
-        string.push('/');
-    }
+
     if let Some(key) = keyboard_input.get_just_pressed().next() {
         match key {
-            KeyCode::Return => {
-                println!("Text input: {}", &*string);
+            KeyCode::Return | KeyCode::NumpadEnter => {
                 command_dispatch_event_writer.send(CommandDispatchEvent {
                     command: string.to_string(),
                 });
@@ -88,24 +85,4 @@ pub fn build_command_interface(commands: &mut Commands) -> Entity {
         ))
         .id();
     command_interface_entity
-}
-
-pub struct CommandPlugin;
-
-impl Plugin for CommandPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_event::<CommandDispatchEvent>()
-            .add_systems(OnEnter(AppState::Command), spawn_command_interface)
-            .add_systems(OnExit(AppState::Command), despawn_command_interface)
-            // .add_systems(Update, command_listener)
-            .add_systems(
-                Update,
-                update_command_interface.run_if(in_state(AppState::Command)),
-            );
-    }
-}
-
-#[derive(Event)]
-pub struct CommandDispatchEvent {
-    pub command: String,
 }
