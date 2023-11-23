@@ -22,6 +22,7 @@ pub fn despawn_command_interface(
 
 pub fn update_command_interface(
     mut event_reader_char: EventReader<ReceivedCharacter>,
+    mut command_dispatch_event_writer: EventWriter<CommandDispatchEvent>,
     keyboard_input: Res<Input<KeyCode>>,
     mut string: Local<String>,
     mut command_interface_query: Query<&mut Text, With<CommandInterface>>,
@@ -34,8 +35,10 @@ pub fn update_command_interface(
     if let Some(key) = keyboard_input.get_just_pressed().next() {
         match key {
             KeyCode::Return => {
-                //future dispatch command location
                 println!("Text input: {}", &*string);
+                command_dispatch_event_writer.send(CommandDispatchEvent {
+                    command: string.to_string(),
+                });
                 string.clear();
             }
             KeyCode::Back => {
@@ -91,11 +94,18 @@ pub struct CommandPlugin;
 
 impl Plugin for CommandPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::Command), spawn_command_interface)
+        app.add_event::<CommandDispatchEvent>()
+            .add_systems(OnEnter(AppState::Command), spawn_command_interface)
             .add_systems(OnExit(AppState::Command), despawn_command_interface)
+            // .add_systems(Update, command_listener)
             .add_systems(
                 Update,
                 update_command_interface.run_if(in_state(AppState::Command)),
             );
     }
+}
+
+#[derive(Event)]
+pub struct CommandDispatchEvent {
+    pub command: String,
 }

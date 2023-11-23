@@ -9,6 +9,7 @@ use bevy::{
 use bevy_atmosphere::prelude::*;
 
 use crate::{
+    command_interface::CommandDispatchEvent,
     coordinates::CoordinateDisplay,
     world::{setup_world, Voxel},
     AppState,
@@ -70,8 +71,8 @@ pub fn setup_player(mut commands: Commands) {
                 clear_color: ClearColorConfig::Custom(Color::BLACK),
                 ..Default::default()
             },
-            transform: Transform::from_xyz(0.0, 0.0, 0.0)
-                .looking_at(Vec3::new(0.0, 0.0, 1.0), Vec3::Y),
+            transform: Transform::from_xyz(0.0, 32.0, 0.0)
+                .looking_at(Vec3::new(0.0, 32.0, 1.0), Vec3::Y),
             ..Default::default()
         },
         Player,
@@ -120,9 +121,9 @@ pub fn player_move(
             for mut text in &mut coordinate_display_query {
                 text.sections[0].value = format!(
                     "x: {}, y: {}, z: {}, rotation: {}",
-                    transform.translation.x as i32,
-                    transform.translation.y as i32,
-                    transform.translation.z as i32,
+                    transform.translation.x,
+                    transform.translation.y,
+                    transform.translation.z,
                     transform.rotation
                 );
             }
@@ -141,11 +142,11 @@ pub fn player_look(
     window_query: Query<&Window, With<PrimaryWindow>>,
     mut input_state: ResMut<InputState>,
     motion: Res<Events<MouseMotion>>,
-    mut query: Query<&mut Transform, With<Player>>,
+    mut transform_query: Query<&mut Transform, With<Player>>,
 ) {
     if let Ok(window) = window_query.get_single() {
         let delta_state = input_state.as_mut();
-        for mut transform in query.iter_mut() {
+        for mut transform in transform_query.iter_mut() {
             let (current_yaw, current_pitch, _) = transform.rotation.to_euler(EulerRot::YXZ);
             for ev in delta_state.reader_motion.read(&motion) {
                 match window.cursor.grab_mode {
@@ -188,6 +189,8 @@ impl Plugin for PlayerPlugin {
         app.init_resource::<InputState>()
             .init_resource::<MovementSettings>()
             .add_event::<PlayerMoveEvent>()
+            .add_systems(Update, speed_command)
+            .add_systems(Update, teleport_command)
             .add_systems(Startup, setup_player)
             .add_systems(Startup, initial_grab_cursor)
             .add_systems(Update, run_world_gen.run_if(in_state(AppState::Game)))
@@ -204,4 +207,45 @@ impl Plugin for PlayerPlugin {
 pub struct PlayerMoveEvent {
     pub starting_position: Vec3,
     pub final_position: Vec3,
+}
+
+pub fn speed_command(
+    mut command_dispatch_event_reader: EventReader<CommandDispatchEvent>,
+    mut player_settings: ResMut<MovementSettings>,
+) {
+    for event in command_dispatch_event_reader.read() {
+        let parts: Vec<&str> = event.command.split_whitespace().collect();
+        if parts.len() == 2 && parts[0] == "/speed" {
+            match parts[1].parse::<f32>() {
+                Ok(parsed_value) => {
+                    println!("'{}' is a valid f32.", parts[1]);
+                    player_settings.speed = parsed_value;
+                }
+                Err(_) => println!("'{}' is not a valid f32.", parts[1]),
+            }
+        }
+    }
+}
+
+pub fn teleport_command(
+    mut transform_query: Query<&mut Transform, With<Player>>,
+    mut command_dispatch_event_reader: EventReader<CommandDispatchEvent>,
+) {
+    for event in command_dispatch_event_reader.read() {
+        let mut transform = transform_query.single_mut();
+        let parts: Vec<&str> = event.command.split_whitespace().collect();
+        if parts.len() == 4 && parts[0] == "/tp" {
+            match (
+                parts[1].parse::<f32>(),
+                parts[2].parse::<f32>(),
+                parts[3].parse::<f32>(),
+            ) {
+                (Ok(x), Ok(y), Ok(z)) => {
+                    println!("'{} {} {}' are valid f32s.", x, y, z);
+                    transform.translation = Vec3::new(x, y, z);
+                }
+                _ => println!("'{:?}' is not a valid f32.", parts),
+            }
+        }
+    }
 }

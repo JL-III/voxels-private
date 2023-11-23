@@ -72,82 +72,8 @@ fn render(
 ) {
     for chunk_event in chunk_create_event_reader.read() {
         let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
-        let mut gen_meshes: Vec<Mesh> = Vec::new();
-        // generate each blocks mesh when its an extreme of the arrays
-        for x in 0..CHUNK_WIDTH {
-            for y in 0..CHUNK_HEIGHT {
-                for z in 0..CHUNK_DEPTH {
-                    let block = chunk_event.chunk.blocks[x][y][z];
-                    if x == CHUNK_WIDTH - 1 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::East,
-                            Vec3::new(
-                                chunk_event.chunk.chunk_x as f32 * 16.0 + x as f32,
-                                y as f32,
-                                chunk_event.chunk.chunk_z as f32 * 16.0 + z as f32,
-                            ),
-                            block.uv_mapping,
-                        ));
-                    }
-                    if z == CHUNK_DEPTH - 1 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::North,
-                            Vec3::new(
-                                chunk_event.chunk.chunk_x as f32 * 16.0 + x as f32,
-                                y as f32,
-                                chunk_event.chunk.chunk_z as f32 * 16.0 + z as f32,
-                            ),
-                            block.uv_mapping,
-                        ));
-                    }
-                    if y == CHUNK_HEIGHT - 1 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::Top,
-                            Vec3::new(
-                                chunk_event.chunk.chunk_x as f32 * 16.0 + x as f32,
-                                y as f32,
-                                chunk_event.chunk.chunk_z as f32 * 16.0 + z as f32,
-                            ),
-                            block.uv_mapping,
-                        ));
-                    }
-                    if y == 0 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::Bottom,
-                            Vec3::new(
-                                chunk_event.chunk.chunk_x as f32 * 16.0 + x as f32,
-                                y as f32,
-                                chunk_event.chunk.chunk_z as f32 * 16.0 + z as f32,
-                            ),
-                            block.uv_mapping,
-                        ));
-                    }
-                    if z == 0 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::South,
-                            Vec3::new(
-                                chunk_event.chunk.chunk_x as f32 * 16.0 + x as f32,
-                                y as f32,
-                                chunk_event.chunk.chunk_z as f32 * 16.0 + z as f32,
-                            ),
-                            block.uv_mapping,
-                        ));
-                    }
-                    if x == 0 {
-                        gen_meshes.push(create_quad(
-                            BlockFace::West,
-                            Vec3::new(
-                                chunk_event.chunk.chunk_x as f32 * 16.0 + x as f32,
-                                y as f32,
-                                chunk_event.chunk.chunk_z as f32 * 16.0 + z as f32,
-                            ),
-                            block.uv_mapping,
-                        ));
-                    }
-                }
-            }
-        }
-        let combined_mesh = merge_meshes(gen_meshes);
+
+        let combined_mesh = merge_meshes(gen_meshes(chunk_event));
         commands.spawn(PbrBundle {
             mesh: meshes.add(combined_mesh.clone()),
             material: materials.add(StandardMaterial {
@@ -184,6 +110,62 @@ fn player_move_event_listener(
             });
         }
     }
+}
+
+fn gen_meshes(chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
+    let mut gen_meshes: Vec<Mesh> = Vec::new();
+
+    for x in 0..CHUNK_WIDTH {
+        for y in 0..CHUNK_HEIGHT {
+            for z in 0..CHUNK_DEPTH {
+                let block = chunk_event.chunk.blocks[x][y][z];
+                let mesh_location = Vec3::new(
+                    chunk_event.chunk.chunk_x as f32 * 16.0 + x as f32,
+                    y as f32,
+                    chunk_event.chunk.chunk_z as f32 * 16.0 + z as f32,
+                );
+                if x == CHUNK_WIDTH - 1 {
+                    gen_meshes.push(create_quad(
+                        BlockFace::East,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+                if z == CHUNK_DEPTH - 1 {
+                    gen_meshes.push(create_quad(
+                        BlockFace::North,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+                if y == CHUNK_HEIGHT - 1 {
+                    gen_meshes.push(create_quad(BlockFace::Top, mesh_location, block.uv_mapping));
+                }
+                if y == 0 {
+                    gen_meshes.push(create_quad(
+                        BlockFace::Bottom,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+                if z == 0 {
+                    gen_meshes.push(create_quad(
+                        BlockFace::South,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+                if x == 0 {
+                    gen_meshes.push(create_quad(
+                        BlockFace::West,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+            }
+        }
+    }
+    gen_meshes
 }
 
 fn get_random_element(y: usize) -> Element {

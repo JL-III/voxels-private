@@ -32,7 +32,7 @@ impl Default for Block {
 impl Block {
     pub fn new(element: Element) -> Self {
         let uv_mapping = match element {
-            Element::Air => UVMapping([0.0, 0.0]),
+            Element::Air => UVMapping([3.0, 6.0]),
             Element::Stone => UVMapping([0.0, 1.0]),
             Element::Dirt => UVMapping([0.0, 2.0]),
             Element::Grass => UVMapping([0.0, 3.0]),
