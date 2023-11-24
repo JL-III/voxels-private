@@ -2,7 +2,9 @@ use std::ops::Index;
 
 use bevy::{prelude::*, render::render_resource::PrimitiveTopology};
 
-use super::element::Element;
+use crate::{command_system::events::CommandDispatchEvent, player::controls::Player};
+
+use super::{element::Element, mesh_utils::merge_meshes};
 
 #[derive(Clone, Copy)]
 pub enum BlockFace {
@@ -62,14 +64,19 @@ impl Index<usize> for UVMapping {
     }
 }
 
-pub fn create_quad(side: BlockFace, offset: Vec3, uv_mapping: UVMapping) -> Mesh {
+#[derive(Resource)]
+pub struct VertexScale {
+    pub scale: f32,
+}
+
+pub fn create_quad(scale: f32, side: BlockFace, offset: Vec3, uv_mapping: UVMapping) -> Mesh {
     let result = match side {
-        BlockFace::North => create_north_quad(offset, uv_mapping),
-        BlockFace::South => create_south_quad(offset, uv_mapping),
-        BlockFace::West => create_west_quad(offset, uv_mapping),
-        BlockFace::East => create_east_quad(offset, uv_mapping),
-        BlockFace::Top => create_top_quad(offset, uv_mapping),
-        BlockFace::Bottom => create_bottom_quad(offset, uv_mapping),
+        BlockFace::North => create_north_quad(scale, offset, uv_mapping),
+        BlockFace::South => create_south_quad(scale, offset, uv_mapping),
+        BlockFace::West => create_west_quad(scale, offset, uv_mapping),
+        BlockFace::East => create_east_quad(scale, offset, uv_mapping),
+        BlockFace::Top => create_top_quad(scale, offset, uv_mapping),
+        BlockFace::Bottom => create_bottom_quad(scale, offset, uv_mapping),
     };
 
     Mesh::new(PrimitiveTopology::TriangleList)
@@ -78,12 +85,16 @@ pub fn create_quad(side: BlockFace, offset: Vec3, uv_mapping: UVMapping) -> Mesh
         .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, result.2)
 }
 
-pub fn create_north_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
+pub fn create_north_quad(
+    scale: f32,
+    offset: Vec3,
+    uv_mapping: UVMapping,
+) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
     let vertices = vec![
-        Vec3::new(-0.5, -0.5, 0.5) + offset,
-        Vec3::new(0.5, -0.5, 0.5) + offset,
-        Vec3::new(0.5, 0.5, 0.5) + offset,
-        Vec3::new(-0.5, 0.5, 0.5) + offset,
+        Vec3::new(0.0, 0.0, scale) + offset,
+        Vec3::new(scale, 0.0, scale) + offset,
+        Vec3::new(scale, scale, scale) + offset,
+        Vec3::new(0.0, scale, scale) + offset,
     ];
     let normals = vec![
         Vec3::new(0.0, 0.0, 1.0),
@@ -95,12 +106,16 @@ pub fn create_north_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec
     (vertices, normals, uvs)
 }
 
-pub fn create_south_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
+pub fn create_south_quad(
+    scale: f32,
+    offset: Vec3,
+    uv_mapping: UVMapping,
+) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
     let vertices = vec![
-        Vec3::new(0.5, -0.5, -0.5) + offset,
-        Vec3::new(-0.5, -0.5, -0.5) + offset,
-        Vec3::new(-0.5, 0.5, -0.5) + offset,
-        Vec3::new(0.5, 0.5, -0.5) + offset,
+        Vec3::new(scale, 0.0, 0.0) + offset,
+        Vec3::new(0.0, 0.0, 0.0) + offset,
+        Vec3::new(0.0, scale, 0.0) + offset,
+        Vec3::new(scale, scale, 0.0) + offset,
     ];
     let normals = vec![
         Vec3::new(0.0, 0.0, -1.0),
@@ -112,12 +127,16 @@ pub fn create_south_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec
     (vertices, normals, uvs)
 }
 
-pub fn create_west_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
+pub fn create_west_quad(
+    scale: f32,
+    offset: Vec3,
+    uv_mapping: UVMapping,
+) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
     let vertices = vec![
-        Vec3::new(-0.5, -0.5, -0.5) + offset,
-        Vec3::new(-0.5, -0.5, 0.5) + offset,
-        Vec3::new(-0.5, 0.5, 0.5) + offset,
-        Vec3::new(-0.5, 0.5, -0.5) + offset,
+        Vec3::new(0.0, 0.0, 0.0) + offset,
+        Vec3::new(0.0, 0.0, scale) + offset,
+        Vec3::new(0.0, scale, scale) + offset,
+        Vec3::new(0.0, scale, 0.0) + offset,
     ];
     let normals = vec![
         Vec3::new(-1.0, 0.0, 0.0),
@@ -129,12 +148,16 @@ pub fn create_west_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec<
     (vertices, normals, uvs)
 }
 
-pub fn create_east_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
+pub fn create_east_quad(
+    scale: f32,
+    offset: Vec3,
+    uv_mapping: UVMapping,
+) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
     let vertices = vec![
-        Vec3::new(0.5, -0.5, 0.5) + offset,
-        Vec3::new(0.5, -0.5, -0.5) + offset,
-        Vec3::new(0.5, 0.5, -0.5) + offset,
-        Vec3::new(0.5, 0.5, 0.5) + offset,
+        Vec3::new(scale, 0.0, scale) + offset,
+        Vec3::new(scale, 0.0, 0.0) + offset,
+        Vec3::new(scale, scale, 0.0) + offset,
+        Vec3::new(scale, scale, scale) + offset,
     ];
     let normals = vec![
         Vec3::new(1.0, 0.0, 0.0),
@@ -146,12 +169,16 @@ pub fn create_east_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec<
     (vertices, normals, uvs)
 }
 
-pub fn create_top_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
+pub fn create_top_quad(
+    scale: f32,
+    offset: Vec3,
+    uv_mapping: UVMapping,
+) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
     let vertices = vec![
-        Vec3::new(-0.5, 0.5, 0.5) + offset,
-        Vec3::new(0.5, 0.5, 0.5) + offset,
-        Vec3::new(0.5, 0.5, -0.5) + offset,
-        Vec3::new(-0.5, 0.5, -0.5) + offset,
+        Vec3::new(0.0, scale, scale) + offset,
+        Vec3::new(scale, scale, scale) + offset,
+        Vec3::new(scale, scale, 0.0) + offset,
+        Vec3::new(0.0, scale, 0.0) + offset,
     ];
     let normals = vec![
         Vec3::new(0.0, -1.0, 0.0),
@@ -164,14 +191,15 @@ pub fn create_top_quad(offset: Vec3, uv_mapping: UVMapping) -> (Vec<Vec3>, Vec<V
 }
 
 pub fn create_bottom_quad(
+    scale: f32,
     offset: Vec3,
     uv_mapping: UVMapping,
 ) -> (Vec<Vec3>, Vec<Vec3>, Vec<Vec2>) {
     let vertices = vec![
-        Vec3::new(-0.5, -0.5, -0.5) + offset,
-        Vec3::new(0.5, -0.5, -0.5) + offset,
-        Vec3::new(0.5, -0.5, 0.5) + offset,
-        Vec3::new(-0.5, -0.5, 0.5) + offset,
+        Vec3::new(0.0, 0.0, 0.0) + offset,
+        Vec3::new(scale, 0.0, 0.0) + offset,
+        Vec3::new(scale, 0.0, scale) + offset,
+        Vec3::new(0.0, 0.0, scale) + offset,
     ];
     let normals = vec![
         Vec3::new(0.0, 1.0, 0.0),
@@ -199,4 +227,78 @@ pub fn get_texture(row: f32, column: f32) -> Vec<Vec2> {
     uvs.push(Vec2::new(left, top));
 
     uvs
+}
+
+pub fn spawn_cube(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    vertex_scale: Res<VertexScale>,
+    asset_server: Res<AssetServer>,
+    mut command_dispatch_event_reader: EventReader<CommandDispatchEvent>,
+    transform_query: Query<&Transform, With<Player>>,
+) {
+    for event in command_dispatch_event_reader.read() {
+        let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
+        let sides = vec![
+            BlockFace::Top,
+            BlockFace::Bottom,
+            BlockFace::East,
+            BlockFace::West,
+            BlockFace::North,
+            BlockFace::South,
+        ];
+        let parts: Vec<&str> = event.command.split_whitespace().collect();
+        if parts.len() == 2 && parts[0] == "/block" {
+            let mut element = Element::Air;
+            match Element::from_str(parts[1]) {
+                Some(Element::Air) => {}
+                Some(Element::Dirt) => element = Element::Dirt,
+                Some(Element::Grass) => element = Element::Grass,
+                Some(Element::Stone) => element = Element::Stone,
+                _ => {
+                    println!("'{}' is not a valid element.", parts[1]);
+                    return;
+                }
+            }
+            if let Ok(transform) = transform_query.get_single() {
+                println!("inside transform");
+                let mut combined_mesh: Vec<Mesh> = Vec::new();
+                let block = Block::new(element);
+                for side in sides {
+                    combined_mesh.push(create_quad(
+                        vertex_scale.scale,
+                        side,
+                        Vec3 {
+                            x: 0.0,
+                            y: 0.0,
+                            z: 1.0,
+                        },
+                        block.uv_mapping,
+                    ));
+                }
+                println!("number of meshes in combined_mesh: {}", combined_mesh.len());
+                println!(
+                    "transform translation  x: {}, y: {}, z: {}",
+                    transform.translation.x, transform.translation.y, transform.translation.z,
+                );
+                commands.spawn(PbrBundle {
+                    mesh: meshes.add(merge_meshes(combined_mesh)),
+                    material: materials.add(StandardMaterial {
+                        base_color_texture: Some(block_atlas.clone()),
+                        unlit: false,
+                        ..default()
+                    }),
+                    transform: Transform::from_xyz(
+                        transform.translation.x,
+                        transform.translation.y,
+                        transform.translation.z + 1.0,
+                    ),
+                    ..default()
+                });
+            } else {
+                warn!("player transform not found!");
+            }
+        }
+    }
 }

@@ -11,3 +11,15 @@ impl Clone for Element {
         *self
     }
 }
+
+impl Element {
+    pub fn from_str(s: &str) -> Option<Element> {
+        match s {
+            "air" => Some(Element::Air),
+            "dirt" => Some(Element::Dirt),
+            "grass" => Some(Element::Grass),
+            "stone" => Some(Element::Stone),
+            _ => None, // Handle the case where the string doesn't match any variant
+        }
+    }
+}

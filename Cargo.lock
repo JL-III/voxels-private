@@ -486,6 +486,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_debug_grid"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a88ea4f201b9a0dee5109d476a1eb6c180745b2c4f8350708117046a2d79f3e"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_derive"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3295,6 +3304,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_atmosphere",
+ "bevy_debug_grid",
  "bevy_screen_diagnostics",
  "bevy_spectator",
  "rand",

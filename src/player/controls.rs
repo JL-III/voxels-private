@@ -31,7 +31,7 @@ impl Default for MovementSettings {
     fn default() -> Self {
         Self {
             sensitivity: 0.00043,
-            speed: 12.,
+            speed: 50.,
         }
     }
 }

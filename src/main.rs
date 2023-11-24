@@ -2,6 +2,7 @@
 use app_state::{plugin::AppStatePlugin, state::AppState};
 use bevy::prelude::*;
 
+use bevy_debug_grid::DebugGridPlugin;
 use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
 use command_system::plugin::CommandPlugin;
 use coordinate_system::plugin::CoordinatePlugin;
@@ -27,5 +28,6 @@ fn main() {
         .add_plugins(CoordinatePlugin)
         .add_plugins(MainMenuPlugin)
         .add_plugins(CommandPlugin)
+        .add_plugins((DebugGridPlugin::with_floor_grid(),))
         .run();
 }

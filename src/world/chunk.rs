@@ -1,4 +1,5 @@
 use crate::{
+    command_system::events::CommandDispatchEvent,
     player::events::PlayerMoveEvent,
     world::block::{create_quad, Block, BlockFace},
 };
@@ -17,13 +18,14 @@ use bevy::{
 };
 
 use super::{
+    block::VertexScale,
     element::Element,
     events::{ChunkCreatedEvent, ChunkEnterEvent},
     mesh_utils::merge_meshes,
 };
 
 const CHUNK_WIDTH: usize = 16;
-const CHUNK_HEIGHT: usize = 16;
+const CHUNK_HEIGHT: usize = 1;
 const CHUNK_DEPTH: usize = 16;
 
 #[derive(Component, Clone, Copy, PartialEq)]
@@ -40,36 +42,57 @@ pub fn chunk_enter_listener(
     mut chunk_create_event_write: EventWriter<ChunkCreatedEvent>,
 ) {
     for event in chunk_enter_event_reader.read() {
-        let mut chunk = Chunk {
-            chunk_x: event.chunk_x,
-            chunk_z: event.chunk_z,
-            blocks: [[[Block::default(); CHUNK_WIDTH]; CHUNK_HEIGHT]; CHUNK_DEPTH],
-        };
-        for x in 0..CHUNK_WIDTH {
-            for y in 0..CHUNK_HEIGHT {
-                for z in 0..CHUNK_DEPTH {
-                    chunk.blocks[x][y][z] = Block::new(get_random_element(y));
-                }
+        let chunks = get_surrounding_chunks(event.chunk_x, event.chunk_z, 3);
+        for chunk in chunks.iter() {
+            if !chunk_registry.chunks.contains(chunk) {
+                chunk_registry.chunks.push(*chunk);
+                commands.spawn((
+                    *chunk,
+                    TransformBundle {
+                        local: {
+                            Transform::from_xyz(chunk.chunk_x as f32, 0.0, chunk.chunk_z as f32)
+                        },
+                        ..Default::default()
+                    },
+                ));
+                chunk_create_event_write.send(ChunkCreatedEvent { chunk: *chunk });
             }
         }
-        if !chunk_registry.chunks.contains(&chunk) {
-            chunk_registry.chunks.push(chunk);
-            commands.spawn((
-                chunk,
-                TransformBundle {
-                    local: {
-                        Transform::from_xyz(
-                            chunk.chunk_x as f32 - 0.5,
-                            0.0,
-                            chunk.chunk_z as f32 - 0.5,
-                        )
-                    },
-                    ..Default::default()
-                },
-            ));
-            chunk_create_event_write.send(ChunkCreatedEvent { chunk });
+    }
+}
+
+// Takes in the chunk_x and chunk_z values to find the chunks
+pub fn get_surrounding_chunks(x: isize, z: isize, radius: isize) -> Vec<Chunk> {
+    let mut chunks = Vec::new();
+    let radius_squared = radius.pow(2);
+
+    for dx in -radius..=radius {
+        for dz in -radius..=radius {
+            if dx.pow(2) + dz.pow(2) <= radius_squared {
+                let chunk_x = x + dx;
+                let chunk_z = z + dz;
+                chunks.push(generate_chunk(chunk_x, chunk_z));
+            }
         }
     }
+
+    chunks
+}
+
+pub fn generate_chunk(x: isize, z: isize) -> Chunk {
+    let mut chunk = Chunk {
+        chunk_x: x,
+        chunk_z: z,
+        blocks: [[[Block::default(); CHUNK_WIDTH]; CHUNK_HEIGHT]; CHUNK_DEPTH],
+    };
+    for x in 0..CHUNK_WIDTH {
+        for y in 0..CHUNK_HEIGHT {
+            for z in 0..CHUNK_DEPTH {
+                chunk.blocks[x][y][z] = Block::new(get_random_element(y));
+            }
+        }
+    }
+    chunk
 }
 
 pub fn render(
@@ -77,12 +100,12 @@ pub fn render(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut chunk_create_event_reader: EventReader<ChunkCreatedEvent>,
+    vertex_scale: Res<VertexScale>,
     asset_server: Res<AssetServer>,
 ) {
     for chunk_event in chunk_create_event_reader.read() {
         let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
-
-        let combined_mesh = merge_meshes(gen_meshes(chunk_event));
+        let combined_mesh = merge_meshes(gen_meshes(vertex_scale.scale, chunk_event));
         commands.spawn(PbrBundle {
             mesh: meshes.add(combined_mesh.clone()),
             material: materials.add(StandardMaterial {
@@ -121,7 +144,7 @@ pub fn player_move_event_listener(
     }
 }
 
-fn gen_meshes(chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
+fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
     let mut gen_meshes: Vec<Mesh> = Vec::new();
 
     for x in 0..CHUNK_WIDTH {
@@ -135,6 +158,7 @@ fn gen_meshes(chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                 );
                 if x == CHUNK_WIDTH - 1 {
                     gen_meshes.push(create_quad(
+                        scale,
                         BlockFace::East,
                         mesh_location,
                         block.uv_mapping,
@@ -142,16 +166,23 @@ fn gen_meshes(chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                 }
                 if z == CHUNK_DEPTH - 1 {
                     gen_meshes.push(create_quad(
+                        scale,
                         BlockFace::North,
                         mesh_location,
                         block.uv_mapping,
                     ));
                 }
                 if y == CHUNK_HEIGHT - 1 {
-                    gen_meshes.push(create_quad(BlockFace::Top, mesh_location, block.uv_mapping));
+                    gen_meshes.push(create_quad(
+                        scale,
+                        BlockFace::Top,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
                 }
                 if y == 0 {
                     gen_meshes.push(create_quad(
+                        scale,
                         BlockFace::Bottom,
                         mesh_location,
                         block.uv_mapping,
@@ -159,6 +190,7 @@ fn gen_meshes(chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                 }
                 if z == 0 {
                     gen_meshes.push(create_quad(
+                        scale,
                         BlockFace::South,
                         mesh_location,
                         block.uv_mapping,
@@ -166,6 +198,7 @@ fn gen_meshes(chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                 }
                 if x == 0 {
                     gen_meshes.push(create_quad(
+                        scale,
                         BlockFace::West,
                         mesh_location,
                         block.uv_mapping,
@@ -189,4 +222,22 @@ fn get_random_element(y: usize) -> Element {
 #[derive(Resource)]
 pub struct ChunkRegistry {
     pub chunks: Vec<Chunk>,
+}
+
+pub fn change_vertex_scale_command(
+    mut vertex_scale: ResMut<VertexScale>,
+    mut command_dispatch_event_reader: EventReader<CommandDispatchEvent>,
+) {
+    for event in command_dispatch_event_reader.read() {
+        let parts: Vec<&str> = event.command.split_whitespace().collect();
+        if parts.len() == 2 && parts[0] == "/chunk" {
+            match parts[1].parse::<f32>() {
+                Ok(parsed_value) => {
+                    println!("'{}' is a valid f32.", parts[1]);
+                    vertex_scale.scale = parsed_value
+                }
+                Err(_) => println!("'{}' is not a valid f32.", parts[1]),
+            }
+        }
+    }
 }
