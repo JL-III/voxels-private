@@ -6,7 +6,7 @@ use std::hash::Hash;
 use std::hash::Hasher;
 
 use super::block::{create_quad, BlockFace};
-use super::chunk::{CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH};
+use super::chunk::{CHUNK_DEPTH, CHUNK_HEIGHT, CHUNK_WIDTH};
 use super::events::ChunkCreatedEvent;
 
 #[derive(Clone)]
