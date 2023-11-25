@@ -228,24 +228,6 @@ pub struct ChunkRegistry {
     pub chunks: Vec<Chunk>,
 }
 
-pub fn change_vertex_scale_command(
-    mut vertex_scale: ResMut<VertexScale>,
-    mut command_dispatch_event_reader: EventReader<CommandDispatchEvent>,
-) {
-    for event in command_dispatch_event_reader.read() {
-        let parts: Vec<&str> = event.command.split_whitespace().collect();
-        if parts.len() == 2 && parts[0] == "/vertex" {
-            match parts[1].parse::<f32>() {
-                Ok(parsed_value) => {
-                    println!("'{}' is a valid f32.", parts[1]);
-                    vertex_scale.scale = parsed_value
-                }
-                Err(_) => println!("'{}' is not a valid f32.", parts[1]),
-            }
-        }
-    }
-}
-
 pub fn despawn_chunks_command(
     mut commands: Commands,
     mut chunk_registry: ResMut<ChunkRegistry>,

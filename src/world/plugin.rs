@@ -6,8 +6,8 @@ use super::{
     atmosphere::{daylight_cycle, setup_environment, CycleTimer},
     block::{spawn_cube, VertexScale},
     chunk::{
-        change_vertex_scale_command, chunk_enter_listener, despawn_chunks_command,
-        player_move_event_listener, render, Chunk, ChunkRegistry,
+        chunk_enter_listener, despawn_chunks_command, player_move_event_listener, render, Chunk,
+        ChunkRegistry,
     },
     events::{ChunkCreatedEvent, ChunkEnterEvent},
 };
@@ -35,7 +35,6 @@ impl Plugin for WorldPlugin {
         .add_event::<ChunkEnterEvent>()
         .add_systems(Update, spawn_cube)
         .add_systems(Update, chunk_enter_listener)
-        .add_systems(Update, change_vertex_scale_command)
         .add_systems(Update, render)
         .add_systems(Update, player_move_event_listener)
         .add_systems(Startup, setup_environment)
