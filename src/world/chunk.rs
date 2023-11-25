@@ -7,8 +7,10 @@ use bevy::{
     asset::{AssetServer, Assets, Handle},
     ecs::{
         component::Component,
+        entity::Entity,
         event::{EventReader, EventWriter},
-        system::{Commands, Res, ResMut, Resource, Query}, query::With, entity::Entity,
+        query::With,
+        system::{Commands, Query, Res, ResMut, Resource},
     },
     math::Vec3,
     pbr::{PbrBundle, StandardMaterial},
@@ -55,7 +57,10 @@ pub fn chunk_enter_listener(
                         ..Default::default()
                     },
                 ));
-                chunk_create_event_write.send(ChunkCreatedEvent { chunk: *chunk, chunk_id:  chunk_transform.id()});
+                chunk_create_event_write.send(ChunkCreatedEvent {
+                    chunk: *chunk,
+                    chunk_id: chunk_transform.id(),
+                });
             }
         }
     }
@@ -249,15 +254,10 @@ pub fn despawn_chunks_command(
 ) {
     for event in command_dispatch_event_reader.read() {
         let parts: Vec<&str> = event.command.split_whitespace().collect();
-        if parts.len() == 2 && parts[0] == "/chunk" {
-            match parts[1] {
-                "despawn" => {
-                    for entity in chunk_query.iter() {
-                        commands.entity(entity).despawn();
-                        chunk_registry.chunks.clear();
-                    }
-                }
-                _ => {}
+        if parts.len() == 2 && parts[0] == "/chunk" && parts[1] == "despawn" {
+            for entity in chunk_query.iter() {
+                commands.entity(entity).despawn();
+                chunk_registry.chunks.clear();
             }
         }
     }

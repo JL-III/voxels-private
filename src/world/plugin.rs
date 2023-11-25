@@ -6,8 +6,8 @@ use super::{
     atmosphere::{daylight_cycle, setup_environment, CycleTimer},
     block::{spawn_cube, VertexScale},
     chunk::{
-        change_vertex_scale_command, chunk_enter_listener, player_move_event_listener, render,
-        Chunk, ChunkRegistry, despawn_chunks_command,
+        change_vertex_scale_command, chunk_enter_listener, despawn_chunks_command,
+        player_move_event_listener, render, Chunk, ChunkRegistry,
     },
     events::{ChunkCreatedEvent, ChunkEnterEvent},
 };

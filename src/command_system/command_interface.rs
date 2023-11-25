@@ -7,12 +7,8 @@ use super::events::CommandDispatchEvent;
 #[derive(Component)]
 pub struct CommandInterface {}
 
-pub fn spawn_command_interface(
-    mut commands: Commands,
-    command_history: ResMut<CommandHistory>,
-) {
-    let _command_interface_entity =
-        build_command_interface(&mut commands, command_history);
+pub fn spawn_command_interface(mut commands: Commands, command_history: ResMut<CommandHistory>) {
+    let _command_interface_entity = build_command_interface(&mut commands, command_history);
 }
 
 pub fn despawn_command_interface(
