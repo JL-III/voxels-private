@@ -117,11 +117,12 @@ pub fn player_move(
             transform.translation += velocity * time.delta_seconds() * settings.speed;
             for mut text in &mut coordinate_display_query {
                 text.sections[0].value = format!(
-                    "x: {}, y: {}, z: {}, rotation: {}",
+                    "x: {:.4}, y: {:.4}, z: {:.4} chunk x:{} z:{}",
                     transform.translation.x,
                     transform.translation.y,
                     transform.translation.z,
-                    transform.rotation
+                    (transform.translation.x / 16.0).floor() as isize,
+                    (transform.translation.z / 16.0).floor() as isize,
                 );
             }
             player_move_event.final_position = transform.translation;
