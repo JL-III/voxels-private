@@ -102,7 +102,6 @@ pub fn update_command_interface(
 pub fn build_command_interface(
     commands: &mut Commands,
     mut command_history: ResMut<CommandHistory>,
-    // asset_server: Res<AssetServer>,
 ) -> Entity {
     if command_history.commands.is_empty() {
         command_history.commands.push("/".to_string());

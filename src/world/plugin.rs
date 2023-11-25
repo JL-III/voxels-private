@@ -6,11 +6,12 @@ use super::{
     atmosphere::{daylight_cycle, setup_environment, CycleTimer},
     block::VertexScale,
     chunk::{
-        chunk_enter_listener, player_move_event_listener, render, setup_initial_chunks, Chunk,
-        ChunkRadius, ChunkRegistry,
+        chunk_enter_listener, generate_noise, load_chunk, load_chunk_from_queue,
+        player_move_event_listener, render, setup_initial_chunks, Chunk, ChunkQueue, ChunkRadius,
+        ChunkRegistry, NoiseValues,
     },
     commands::{chunk_despawn_command, chunk_radius_command, spawn_cube_command},
-    events::{ChunkCreatedEvent, ChunkEnterEvent},
+    events::{ChunkCreatedEvent, ChunkEnterEvent, PrepareChunkLoadEvent},
 };
 
 pub struct WorldPlugin;
@@ -22,6 +23,8 @@ impl Plugin for WorldPlugin {
         })
         .insert_resource(VertexScale { scale: 1.0 })
         .insert_resource(ChunkRadius { radius: 3 })
+        .insert_resource(ChunkQueue { chunks: Vec::new() })
+        .insert_resource(NoiseValues::default())
         .insert_resource(Msaa::Sample4)
         .insert_resource(AtmosphereModel::default())
         .insert_resource(CycleTimer(Timer::new(
@@ -31,6 +34,10 @@ impl Plugin for WorldPlugin {
         .add_plugins((AtmospherePlugin,))
         .add_event::<ChunkCreatedEvent>()
         .add_event::<ChunkEnterEvent>()
+        .add_event::<PrepareChunkLoadEvent>()
+        .add_systems(Startup, generate_noise)
+        .add_systems(Update, load_chunk)
+        .add_systems(Update, load_chunk_from_queue)
         .add_systems(Update, spawn_cube_command)
         .add_systems(Update, chunk_enter_listener)
         .add_systems(Update, render)

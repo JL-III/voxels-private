@@ -14,3 +14,8 @@ pub struct ChunkEnterEvent {
     pub chunk_x: isize,
     pub chunk_z: isize,
 }
+
+#[derive(Event)]
+pub struct PrepareChunkLoadEvent {
+    pub chunk: Chunk,
+}
