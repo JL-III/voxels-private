@@ -6,9 +6,10 @@ use super::{
     atmosphere::{daylight_cycle, setup_environment, CycleTimer},
     block::{spawn_cube, VertexScale},
     chunk::{
-        chunk_enter_listener, despawn_chunks_command, player_move_event_listener, render, Chunk,
-        ChunkRegistry, setup_initial_chunks,
+        chunk_enter_listener, player_move_event_listener, render, setup_initial_chunks, Chunk,
+        ChunkRadius, ChunkRegistry,
     },
+    commands::{chunk_despawn_command, chunk_radius_command},
     events::{ChunkCreatedEvent, ChunkEnterEvent},
 };
 
@@ -20,6 +21,7 @@ impl Plugin for WorldPlugin {
             chunks: Vec::<Chunk>::new(),
         })
         .insert_resource(VertexScale { scale: 1.0 })
+        .insert_resource(ChunkRadius { radius: 3 })
         .insert_resource(Msaa::Sample4)
         .insert_resource(AtmosphereModel::new(Nishita {
             sun_position: Vec3::new(-1., 0., 0.),
@@ -40,6 +42,7 @@ impl Plugin for WorldPlugin {
         .add_systems(Startup, setup_environment)
         .add_systems(Update, setup_initial_chunks)
         .add_systems(Update, daylight_cycle)
-        .add_systems(Update, despawn_chunks_command);
+        .add_systems(Update, chunk_despawn_command)
+        .add_systems(Update, chunk_radius_command);
     }
 }

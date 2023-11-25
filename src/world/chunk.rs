@@ -1,18 +1,14 @@
 use crate::{
-    command_system::events::CommandDispatchEvent,
     player::events::{PlayerMoveEvent, PlayerSpawnEvent},
-    world::block::{create_quad, Block, BlockFace},
+    world::block::Block,
 };
 use bevy::{
     asset::{AssetServer, Assets, Handle},
     ecs::{
         component::Component,
-        entity::Entity,
         event::{EventReader, EventWriter},
-        query::With,
-        system::{Commands, Query, Res, ResMut, Resource},
+        system::{Commands, Res, ResMut, Resource},
     },
-    math::Vec3,
     pbr::{PbrBundle, StandardMaterial},
     prelude::default,
     render::{mesh::Mesh, texture::Image},
@@ -23,28 +19,33 @@ use super::{
     block::VertexScale,
     element::Element,
     events::{ChunkCreatedEvent, ChunkEnterEvent},
-    mesh_utils::merge_meshes,
+    mesh_utils::{gen_meshes, merge_meshes},
 };
 
-const CHUNK_WIDTH: usize = 16;
-const CHUNK_HEIGHT: usize = 1;
-const CHUNK_DEPTH: usize = 16;
+pub const CHUNK_WIDTH: usize = 16;
+pub const CHUNK_HEIGHT: usize = 1;
+pub const CHUNK_DEPTH: usize = 16;
 
 #[derive(Component, Clone, Copy, PartialEq)]
 pub struct Chunk {
-    chunk_x: isize,
-    chunk_z: isize,
-    blocks: [[[Block; CHUNK_WIDTH]; CHUNK_HEIGHT]; CHUNK_DEPTH],
+    pub chunk_x: isize,
+    pub chunk_z: isize,
+    pub blocks: [[[Block; CHUNK_WIDTH]; CHUNK_HEIGHT]; CHUNK_DEPTH],
 }
 
 pub fn setup_initial_chunks(
     mut chunk_registry: ResMut<ChunkRegistry>,
+    chunk_radius: Res<ChunkRadius>,
     mut commands: Commands,
     mut player_spawned_event: EventReader<PlayerSpawnEvent>,
     mut chunk_create_event_write: EventWriter<ChunkCreatedEvent>,
 ) {
     for event in player_spawned_event.read() {
-        let chunks = get_surrounding_chunks(convert_to_chunk_location(event.position.x), convert_to_chunk_location(event.position.z), 3);
+        let chunks = get_surrounding_chunks(
+            convert_to_chunk_location(event.position.x),
+            convert_to_chunk_location(event.position.z),
+            chunk_radius.radius,
+        );
         for chunk in chunks.iter() {
             if !chunk_registry.chunks.contains(chunk) {
                 chunk_registry.chunks.push(*chunk);
@@ -68,12 +69,13 @@ pub fn setup_initial_chunks(
 
 pub fn chunk_enter_listener(
     mut chunk_registry: ResMut<ChunkRegistry>,
+    chunk_radius: Res<ChunkRadius>,
     mut commands: Commands,
     mut chunk_enter_event_reader: EventReader<ChunkEnterEvent>,
     mut chunk_create_event_write: EventWriter<ChunkCreatedEvent>,
 ) {
     for event in chunk_enter_event_reader.read() {
-        let chunks = get_surrounding_chunks(event.chunk_x, event.chunk_z, 3);
+        let chunks = get_surrounding_chunks(event.chunk_x, event.chunk_z, chunk_radius.radius);
         for chunk in chunks.iter() {
             if !chunk_registry.chunks.contains(chunk) {
                 chunk_registry.chunks.push(*chunk);
@@ -177,72 +179,6 @@ pub fn player_move_event_listener(
     }
 }
 
-fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
-    let mut gen_meshes: Vec<Mesh> = Vec::new();
-
-    for x in 0..CHUNK_WIDTH {
-        for y in 0..CHUNK_HEIGHT {
-            for z in 0..CHUNK_DEPTH {
-                let block = chunk_event.chunk.blocks[x][y][z];
-                let mesh_location = Vec3::new(
-                    chunk_event.chunk.chunk_x as f32 * 16.0 + x as f32,
-                    y as f32,
-                    chunk_event.chunk.chunk_z as f32 * 16.0 + z as f32,
-                );
-                if x == CHUNK_WIDTH - 1 {
-                    gen_meshes.push(create_quad(
-                        scale,
-                        BlockFace::East,
-                        mesh_location,
-                        block.uv_mapping,
-                    ));
-                }
-                if z == CHUNK_DEPTH - 1 {
-                    gen_meshes.push(create_quad(
-                        scale,
-                        BlockFace::North,
-                        mesh_location,
-                        block.uv_mapping,
-                    ));
-                }
-                if y == CHUNK_HEIGHT - 1 {
-                    gen_meshes.push(create_quad(
-                        scale,
-                        BlockFace::Top,
-                        mesh_location,
-                        block.uv_mapping,
-                    ));
-                }
-                if y == 0 {
-                    gen_meshes.push(create_quad(
-                        scale,
-                        BlockFace::Bottom,
-                        mesh_location,
-                        block.uv_mapping,
-                    ));
-                }
-                if z == 0 {
-                    gen_meshes.push(create_quad(
-                        scale,
-                        BlockFace::South,
-                        mesh_location,
-                        block.uv_mapping,
-                    ));
-                }
-                if x == 0 {
-                    gen_meshes.push(create_quad(
-                        scale,
-                        BlockFace::West,
-                        mesh_location,
-                        block.uv_mapping,
-                    ));
-                }
-            }
-        }
-    }
-    gen_meshes
-}
-
 fn get_random_element(y: usize) -> Element {
     match y {
         _ if y == 10 => Element::Grass,
@@ -261,19 +197,7 @@ pub struct ChunkRegistry {
     pub chunks: Vec<Chunk>,
 }
 
-pub fn despawn_chunks_command(
-    mut commands: Commands,
-    mut chunk_registry: ResMut<ChunkRegistry>,
-    chunk_query: Query<Entity, With<Chunk>>,
-    mut command_dispatch_event_reader: EventReader<CommandDispatchEvent>,
-) {
-    for event in command_dispatch_event_reader.read() {
-        let parts: Vec<&str> = event.command.split_whitespace().collect();
-        if parts.len() == 2 && parts[0] == "/chunk" && parts[1] == "despawn" {
-            for entity in chunk_query.iter() {
-                commands.entity(entity).despawn();
-                chunk_registry.chunks.clear();
-            }
-        }
-    }
+#[derive(Resource)]
+pub struct ChunkRadius {
+    pub radius: isize,
 }

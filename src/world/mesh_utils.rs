@@ -5,6 +5,10 @@ use bevy::render::render_resource::PrimitiveTopology;
 use std::hash::Hash;
 use std::hash::Hasher;
 
+use super::block::{create_quad, BlockFace};
+use super::chunk::{CHUNK_DEPTH, CHUNK_HEIGHT, CHUNK_WIDTH};
+use super::events::ChunkCreatedEvent;
+
 #[derive(Clone)]
 struct VertexData {
     position: Vec3,
@@ -75,4 +79,70 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
     combined_mesh.set_indices(Some(Indices::U32(indices)));
 
     combined_mesh
+}
+
+pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
+    let mut gen_meshes: Vec<Mesh> = Vec::new();
+
+    for x in 0..CHUNK_WIDTH {
+        for y in 0..CHUNK_HEIGHT {
+            for z in 0..CHUNK_DEPTH {
+                let block = chunk_event.chunk.blocks[x][y][z];
+                let mesh_location = Vec3::new(
+                    chunk_event.chunk.chunk_x as f32 * 16.0 + x as f32,
+                    y as f32,
+                    chunk_event.chunk.chunk_z as f32 * 16.0 + z as f32,
+                );
+                if x == CHUNK_WIDTH - 1 {
+                    gen_meshes.push(create_quad(
+                        scale,
+                        BlockFace::East,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+                if z == CHUNK_DEPTH - 1 {
+                    gen_meshes.push(create_quad(
+                        scale,
+                        BlockFace::North,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+                if y == CHUNK_HEIGHT - 1 {
+                    gen_meshes.push(create_quad(
+                        scale,
+                        BlockFace::Top,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+                if y == 0 {
+                    gen_meshes.push(create_quad(
+                        scale,
+                        BlockFace::Bottom,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+                if z == 0 {
+                    gen_meshes.push(create_quad(
+                        scale,
+                        BlockFace::South,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+                if x == 0 {
+                    gen_meshes.push(create_quad(
+                        scale,
+                        BlockFace::West,
+                        mesh_location,
+                        block.uv_mapping,
+                    ));
+                }
+            }
+        }
+    }
+    gen_meshes
 }

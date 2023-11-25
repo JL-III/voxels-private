@@ -77,7 +77,10 @@ pub fn setup_player(
         Player,
         AtmosphereCamera::default(),
     ));
-    player_spawned_event_writer.send(PlayerSpawnEvent { position: translation, entity_id: player.id() });
+    player_spawned_event_writer.send(PlayerSpawnEvent {
+        position: translation,
+        entity_id: player.id(),
+    });
 }
 
 pub fn player_move(
