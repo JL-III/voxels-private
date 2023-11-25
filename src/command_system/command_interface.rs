@@ -7,17 +7,12 @@ use super::events::CommandDispatchEvent;
 #[derive(Component)]
 pub struct CommandInterface {}
 
-pub fn get_font(asset_server: Res<AssetServer>) -> Handle<Font> {
-    asset_server.load("fonts/FiraSans-Bold.ttf")
-}
-
 pub fn spawn_command_interface(
     mut commands: Commands,
     command_history: ResMut<CommandHistory>,
-    asset_server: Res<AssetServer>,
 ) {
     let _command_interface_entity =
-        build_command_interface(&mut commands, command_history, asset_server);
+        build_command_interface(&mut commands, command_history);
 }
 
 pub fn despawn_command_interface(
@@ -111,7 +106,7 @@ pub fn update_command_interface(
 pub fn build_command_interface(
     commands: &mut Commands,
     mut command_history: ResMut<CommandHistory>,
-    asset_server: Res<AssetServer>,
+    // asset_server: Res<AssetServer>,
 ) -> Entity {
     if command_history.commands.is_empty() {
         command_history.commands.push("/".to_string());
@@ -131,7 +126,6 @@ pub fn build_command_interface(
                     command_history.commands[0].clone(),
                     TextStyle {
                         font_size: 32.0,
-                        font: get_font(asset_server),
                         ..default()
                     },
                 ),

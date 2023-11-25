@@ -8,7 +8,7 @@ use bevy::{
     ecs::{
         component::Component,
         event::{EventReader, EventWriter},
-        system::{Commands, Res, ResMut, Resource},
+        system::{Commands, Res, ResMut, Resource, Query}, query::With, entity::Entity,
     },
     math::Vec3,
     pbr::{PbrBundle, StandardMaterial},
@@ -46,7 +46,7 @@ pub fn chunk_enter_listener(
         for chunk in chunks.iter() {
             if !chunk_registry.chunks.contains(chunk) {
                 chunk_registry.chunks.push(*chunk);
-                commands.spawn((
+                let chunk_transform = commands.spawn((
                     *chunk,
                     TransformBundle {
                         local: {
@@ -55,7 +55,7 @@ pub fn chunk_enter_listener(
                         ..Default::default()
                     },
                 ));
-                chunk_create_event_write.send(ChunkCreatedEvent { chunk: *chunk });
+                chunk_create_event_write.send(ChunkCreatedEvent { chunk: *chunk, chunk_id:  chunk_transform.id()});
             }
         }
     }
@@ -106,7 +106,7 @@ pub fn render(
     for chunk_event in chunk_create_event_reader.read() {
         let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
         let combined_mesh = merge_meshes(gen_meshes(vertex_scale.scale, chunk_event));
-        commands.spawn(PbrBundle {
+        commands.entity(chunk_event.chunk_id).insert(PbrBundle {
             mesh: meshes.add(combined_mesh.clone()),
             material: materials.add(StandardMaterial {
                 base_color_texture: Some(block_atlas.clone()),
@@ -135,7 +135,6 @@ pub fn player_move_event_listener(
         let final_chunk_z = (event.final_position.z / 16.0).floor() as isize;
 
         if starting_chunk_x != final_chunk_x || starting_chunk_z != final_chunk_z {
-            println!("Inside chunk: x: {} z: {}", final_chunk_x, final_chunk_z);
             enter_chunk_event_writer.send(ChunkEnterEvent {
                 chunk_x: final_chunk_x,
                 chunk_z: final_chunk_z,
@@ -230,13 +229,35 @@ pub fn change_vertex_scale_command(
 ) {
     for event in command_dispatch_event_reader.read() {
         let parts: Vec<&str> = event.command.split_whitespace().collect();
-        if parts.len() == 2 && parts[0] == "/chunk" {
+        if parts.len() == 2 && parts[0] == "/vertex" {
             match parts[1].parse::<f32>() {
                 Ok(parsed_value) => {
                     println!("'{}' is a valid f32.", parts[1]);
                     vertex_scale.scale = parsed_value
                 }
                 Err(_) => println!("'{}' is not a valid f32.", parts[1]),
+            }
+        }
+    }
+}
+
+pub fn despawn_chunks_command(
+    mut commands: Commands,
+    mut chunk_registry: ResMut<ChunkRegistry>,
+    chunk_query: Query<Entity, With<Chunk>>,
+    mut command_dispatch_event_reader: EventReader<CommandDispatchEvent>,
+) {
+    for event in command_dispatch_event_reader.read() {
+        let parts: Vec<&str> = event.command.split_whitespace().collect();
+        if parts.len() == 2 && parts[0] == "/chunk" {
+            match parts[1] {
+                "despawn" => {
+                    for entity in chunk_query.iter() {
+                        commands.entity(entity).despawn();
+                        chunk_registry.chunks.clear();
+                    }
+                }
+                _ => {}
             }
         }
     }

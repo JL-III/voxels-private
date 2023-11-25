@@ -43,7 +43,6 @@ pub fn grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>) {
     if let Ok(mut window) = window_query.get_single_mut() {
         window.cursor.grab_mode = CursorGrabMode::Confined;
         window.cursor.visible = false;
-        println!("Cursorgrab set to Confined")
     }
 }
 
@@ -51,7 +50,6 @@ pub fn release_cursor(mut window_query: Query<&mut Window, With<PrimaryWindow>>)
     if let Ok(mut window) = window_query.get_single_mut() {
         window.cursor.grab_mode = CursorGrabMode::None;
         window.cursor.visible = true;
-        println!("Cursorgrab set to None")
     }
 }
 
@@ -194,7 +192,7 @@ pub fn teleport_command(
     for event in command_dispatch_event_reader.read() {
         let mut transform = transform_query.single_mut();
         let parts: Vec<&str> = event.command.split_whitespace().collect();
-        if parts.len() == 4 && parts[0] == "/tp" {
+        if parts.len() == 4 && parts[0] == "/tppos" {
             match (
                 parts[1].parse::<f32>(),
                 parts[2].parse::<f32>(),
