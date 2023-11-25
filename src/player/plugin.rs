@@ -10,7 +10,7 @@ use super::{
         grab_cursor, initial_grab_cursor, player_look, player_move, release_cursor, setup_player,
         speed_command, teleport_command, InputState, MovementSettings,
     },
-    events::PlayerMoveEvent,
+    events::{PlayerMoveEvent, PlayerSpawnEvent},
 };
 
 pub struct PlayerPlugin;
@@ -20,6 +20,7 @@ impl Plugin for PlayerPlugin {
         app.init_resource::<InputState>()
             .init_resource::<MovementSettings>()
             .add_event::<PlayerMoveEvent>()
+            .add_event::<PlayerSpawnEvent>()
             .add_systems(Update, speed_command)
             .add_systems(Update, teleport_command)
             .add_systems(Startup, setup_player)

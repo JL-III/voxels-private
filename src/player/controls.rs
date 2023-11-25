@@ -10,7 +10,7 @@ use bevy_atmosphere::prelude::*;
 
 use crate::command_system::events::CommandDispatchEvent;
 
-use super::events::PlayerMoveEvent;
+use super::events::{PlayerMoveEvent, PlayerSpawnEvent};
 
 #[derive(Resource, Default)]
 pub struct InputState {
@@ -29,7 +29,7 @@ impl Default for MovementSettings {
     fn default() -> Self {
         Self {
             sensitivity: 0.00043,
-            speed: 50.,
+            speed: 12.,
         }
     }
 }
@@ -59,20 +59,25 @@ pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWind
     }
 }
 
-pub fn setup_player(mut commands: Commands) {
-    commands.spawn((
+pub fn setup_player(
+    mut commands: Commands,
+    mut player_spawned_event_writer: EventWriter<PlayerSpawnEvent>,
+) {
+    let translation = Vec3::new(0.0, 2.0, 0.0);
+    let player = commands.spawn((
         Camera3dBundle {
             camera_3d: Camera3d {
                 clear_color: ClearColorConfig::Custom(Color::BLACK),
                 ..Default::default()
             },
-            transform: Transform::from_xyz(0.0, 32.0, 0.0)
-                .looking_at(Vec3::new(0.0, 32.0, 1.0), Vec3::Y),
+            transform: Transform::from_translation(translation)
+                .looking_at(Vec3::new(0.0, 2.0, 1.0), Vec3::Y),
             ..Default::default()
         },
         Player,
         AtmosphereCamera::default(),
     ));
+    player_spawned_event_writer.send(PlayerSpawnEvent { position: translation, entity_id: player.id() });
 }
 
 pub fn player_move(

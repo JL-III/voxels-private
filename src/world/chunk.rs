@@ -1,6 +1,6 @@
 use crate::{
     command_system::events::CommandDispatchEvent,
-    player::events::PlayerMoveEvent,
+    player::events::{PlayerMoveEvent, PlayerSpawnEvent},
     world::block::{create_quad, Block, BlockFace},
 };
 use bevy::{
@@ -35,6 +35,35 @@ pub struct Chunk {
     chunk_x: isize,
     chunk_z: isize,
     blocks: [[[Block; CHUNK_WIDTH]; CHUNK_HEIGHT]; CHUNK_DEPTH],
+}
+
+pub fn setup_initial_chunks(
+    mut chunk_registry: ResMut<ChunkRegistry>,
+    mut commands: Commands,
+    mut player_spawned_event: EventReader<PlayerSpawnEvent>,
+    mut chunk_create_event_write: EventWriter<ChunkCreatedEvent>,
+) {
+    for event in player_spawned_event.read() {
+        let chunks = get_surrounding_chunks(convert_to_chunk_location(event.position.x), convert_to_chunk_location(event.position.z), 3);
+        for chunk in chunks.iter() {
+            if !chunk_registry.chunks.contains(chunk) {
+                chunk_registry.chunks.push(*chunk);
+                let chunk_transform = commands.spawn((
+                    *chunk,
+                    TransformBundle {
+                        local: {
+                            Transform::from_xyz(chunk.chunk_x as f32, 0.0, chunk.chunk_z as f32)
+                        },
+                        ..Default::default()
+                    },
+                ));
+                chunk_create_event_write.send(ChunkCreatedEvent {
+                    chunk: *chunk,
+                    chunk_id: chunk_transform.id(),
+                });
+            }
+        }
+    }
 }
 
 pub fn chunk_enter_listener(
@@ -221,6 +250,10 @@ fn get_random_element(y: usize) -> Element {
         _ if y <= 5 => Element::Stone,
         _ => Element::Air,
     }
+}
+
+fn convert_to_chunk_location(location: f32) -> isize {
+    (location / 16.0).floor() as isize
 }
 
 #[derive(Resource)]

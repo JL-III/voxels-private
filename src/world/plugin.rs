@@ -7,7 +7,7 @@ use super::{
     block::{spawn_cube, VertexScale},
     chunk::{
         chunk_enter_listener, despawn_chunks_command, player_move_event_listener, render, Chunk,
-        ChunkRegistry,
+        ChunkRegistry, setup_initial_chunks,
     },
     events::{ChunkCreatedEvent, ChunkEnterEvent},
 };
@@ -38,6 +38,7 @@ impl Plugin for WorldPlugin {
         .add_systems(Update, render)
         .add_systems(Update, player_move_event_listener)
         .add_systems(Startup, setup_environment)
+        .add_systems(Update, setup_initial_chunks)
         .add_systems(Update, daylight_cycle)
         .add_systems(Update, despawn_chunks_command);
     }
