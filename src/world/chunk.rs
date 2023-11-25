@@ -9,6 +9,7 @@ use bevy::{
         event::{EventReader, EventWriter},
         system::{Commands, Res, ResMut, Resource},
     },
+    math::Vec2,
     pbr::{PbrBundle, StandardMaterial},
     prelude::default,
     render::{mesh::Mesh, texture::Image},
@@ -24,7 +25,7 @@ use super::{
 };
 
 pub const CHUNK_WIDTH: usize = 16;
-pub const CHUNK_HEIGHT: usize = 16;
+pub const CHUNK_HEIGHT: usize = 256;
 pub const CHUNK_DEPTH: usize = 16;
 
 #[derive(Component, Clone, Copy, PartialEq)]
@@ -39,14 +40,12 @@ pub fn setup_initial_chunks(
     chunk_radius: Res<ChunkRadius>,
     mut chunk_queue: ResMut<ChunkQueue>,
     mut player_spawned_event: EventReader<PlayerSpawnEvent>,
-    noise_values: ResMut<NoiseValues>,
 ) {
     for event in player_spawned_event.read() {
         let chunks = get_surrounding_chunks(
             convert_to_chunk_location(event.position.x),
             convert_to_chunk_location(event.position.z),
             chunk_radius.radius,
-            &noise_values,
         );
         for chunk in chunks.iter() {
             if !chunk_registry.chunks.contains(chunk) {
@@ -62,15 +61,9 @@ pub fn chunk_enter_listener(
     chunk_radius: Res<ChunkRadius>,
     mut chunk_queue: ResMut<ChunkQueue>,
     mut chunk_enter_event_reader: EventReader<ChunkEnterEvent>,
-    noise_values: ResMut<NoiseValues>,
 ) {
     for event in chunk_enter_event_reader.read() {
-        let chunks = get_surrounding_chunks(
-            event.chunk_x,
-            event.chunk_z,
-            chunk_radius.radius,
-            &noise_values,
-        );
+        let chunks = get_surrounding_chunks(event.chunk_x, event.chunk_z, chunk_radius.radius);
         for chunk in chunks.iter() {
             if !chunk_registry.chunks.contains(chunk) {
                 chunk_registry.chunks.push(*chunk);
@@ -107,22 +100,20 @@ pub fn load_chunk(
 pub fn load_chunk_from_queue(
     mut chunk_queue: ResMut<ChunkQueue>,
     mut prepare_chunk_load_event_write: EventWriter<PrepareChunkLoadEvent>,
+    noise_values: ResMut<NoiseValues>,
 ) {
     let chunks_to_update = 1;
     for _ in 0..chunks_to_update {
         if let Some(chunk) = chunk_queue.chunks.pop() {
-            prepare_chunk_load_event_write.send(PrepareChunkLoadEvent { chunk })
+            prepare_chunk_load_event_write.send(PrepareChunkLoadEvent {
+                chunk: generate_chunk(chunk[0] as isize, chunk[1] as isize, &noise_values),
+            })
         }
     }
 }
 
 // Takes in the chunk_x and chunk_z values to find the chunks
-pub fn get_surrounding_chunks(
-    x: isize,
-    z: isize,
-    radius: isize,
-    noise_values: &ResMut<NoiseValues>,
-) -> Vec<Chunk> {
+pub fn get_surrounding_chunks(x: isize, z: isize, radius: isize) -> Vec<Vec2> {
     let mut chunks = Vec::new();
     let radius_squared = radius.pow(2);
 
@@ -131,7 +122,7 @@ pub fn get_surrounding_chunks(
             if dx.pow(2) + dz.pow(2) <= radius_squared {
                 let chunk_x = x + dx;
                 let chunk_z = z + dz;
-                chunks.push(generate_chunk(chunk_x, chunk_z, noise_values));
+                chunks.push(Vec2::new(chunk_x as f32, chunk_z as f32));
             }
         }
     }
@@ -221,9 +212,9 @@ fn get_random_element(y: usize, noise_value: f64) -> Element {
     let adjusted_y = y as f64 + noise_value * 10.0;
 
     match adjusted_y as usize {
-        _ if adjusted_y > 10.0 => Element::Air,
-        _ if adjusted_y <= 10.0 && adjusted_y > 5.0 => Element::Dirt,
-        _ if adjusted_y <= 5.0 => Element::Stone,
+        _ if adjusted_y > 64.0 => Element::Air,
+        _ if adjusted_y <= 50.0 && adjusted_y > 5.0 => Element::Dirt,
+        _ if adjusted_y <= 25.0 => Element::Stone,
         _ => Element::Grass,
     }
 }
@@ -239,12 +230,12 @@ pub struct ChunkRadius {
 
 #[derive(Resource)]
 pub struct ChunkQueue {
-    pub chunks: Vec<Chunk>,
+    pub chunks: Vec<Vec2>,
 }
 
 #[derive(Resource)]
 pub struct ChunkRegistry {
-    pub chunks: Vec<Chunk>,
+    pub chunks: Vec<Vec2>,
 }
 
 #[derive(Resource, Copy, Clone)]
