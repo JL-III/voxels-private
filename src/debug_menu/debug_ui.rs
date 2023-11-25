@@ -65,9 +65,7 @@ pub fn chunk_created_listener(
 ) {
     for event in chunk_created_event_reader.read() {
         for mut text in &mut chunk_registry_display_query {
-            text.sections[0].value = format!(
-                "chunk registry count: {}", event.registry_size
-            )
+            text.sections[0].value = format!("chunk registry count: {}", event.registry_size)
         }
     }
 }

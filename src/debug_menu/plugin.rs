@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use super::debug_ui::{player_move_event_listener, spawn_coordinate_display, spawn_chunk_registry_display, chunk_created_listener};
+use super::debug_ui::{
+    chunk_created_listener, player_move_event_listener, spawn_chunk_registry_display,
+    spawn_coordinate_display,
+};
 
 pub struct DebugPlugin;
 
