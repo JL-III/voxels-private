@@ -23,7 +23,7 @@ use super::{
 };
 
 pub const CHUNK_WIDTH: usize = 16;
-pub const CHUNK_HEIGHT: usize = 1;
+pub const CHUNK_HEIGHT: usize = 16;
 pub const CHUNK_DEPTH: usize = 16;
 
 #[derive(Component, Clone, Copy, PartialEq)]
