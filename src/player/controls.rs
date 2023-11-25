@@ -8,9 +8,7 @@ use bevy::{
 
 use bevy_atmosphere::prelude::*;
 
-use crate::{
-    command_system::events::CommandDispatchEvent, coordinate_system::coordinates::CoordinateDisplay,
-};
+use crate::command_system::events::CommandDispatchEvent;
 
 use super::events::PlayerMoveEvent;
 
@@ -84,7 +82,6 @@ pub fn player_move(
     window_query: Query<&Window, With<PrimaryWindow>>,
     settings: Res<MovementSettings>,
     mut transform_query: Query<&mut Transform, With<Player>>,
-    mut coordinate_display_query: Query<&mut Text, With<CoordinateDisplay>>,
 ) {
     if let Ok(window) = window_query.get_single() {
         for mut transform in transform_query.iter_mut() {
@@ -115,16 +112,7 @@ pub fn player_move(
             velocity = velocity.normalize_or_zero();
 
             transform.translation += velocity * time.delta_seconds() * settings.speed;
-            for mut text in &mut coordinate_display_query {
-                text.sections[0].value = format!(
-                    "x: {:.4}, y: {:.4}, z: {:.4} chunk x:{} z:{}",
-                    transform.translation.x,
-                    transform.translation.y,
-                    transform.translation.z,
-                    (transform.translation.x / 16.0).floor() as isize,
-                    (transform.translation.z / 16.0).floor() as isize,
-                );
-            }
+
             player_move_event.final_position = transform.translation;
             if player_move_event.starting_position != player_move_event.final_position {
                 player_move_event_writer.send(player_move_event);
