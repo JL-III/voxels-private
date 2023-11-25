@@ -77,11 +77,12 @@ pub fn player_move_event_listener(
     for event in player_move_event_reader.read() {
         for mut text in &mut coordinate_display_query {
             text.sections[0].value = format!(
-                "x: {:.4}, y: {:.4}, z: {:.4} chunk x:{} z:{}",
+                "x: {:.4}, y: {:.4}, z: {:.4} chunk x:{} y:{} z:{}",
                 event.final_position.x,
                 event.final_position.y,
                 event.final_position.z,
                 (event.final_position.x / 16.0).floor() as isize,
+                (event.final_position.y / 16.0).floor() as isize,
                 (event.final_position.z / 16.0).floor() as isize,
             );
         }

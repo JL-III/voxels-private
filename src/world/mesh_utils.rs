@@ -90,9 +90,9 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
             for z in 0..CHUNK_DEPTH {
                 let block = chunk_event.chunk.blocks[x][y][z];
                 let mesh_location = Vec3::new(
-                    chunk_event.chunk.chunk_x as f32 * 15.0 + x as f32,
-                    y as f32,
-                    chunk_event.chunk.chunk_z as f32 * 15.0 + z as f32,
+                    chunk_event.chunk.chunk_x * 15.0 + x as f32,
+                    chunk_event.chunk.chunk_y * 15.0 + y as f32,
+                    chunk_event.chunk.chunk_z * 15.0 + z as f32,
                 );
                 // exempt air from needing a mesh
                 if block.element == Element::Air {

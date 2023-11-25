@@ -11,8 +11,7 @@ pub struct ChunkCreatedEvent {
 
 #[derive(Event)]
 pub struct ChunkEnterEvent {
-    pub chunk_x: isize,
-    pub chunk_z: isize,
+    pub chunk_coords: Vec3,
 }
 
 #[derive(Event)]

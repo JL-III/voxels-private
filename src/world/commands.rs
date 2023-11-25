@@ -39,7 +39,7 @@ pub fn chunk_radius_command(
     for event in command_dispatch_event_reader.read() {
         let parts: Vec<&str> = event.command.split_whitespace().collect();
         if parts.len() == 3 && parts[0] == "/chunk" && parts[1] == "radius" {
-            if let Ok(parsed_input) = parts[2].parse::<isize>() {
+            if let Ok(parsed_input) = parts[2].parse::<i32>() {
                 chunk_radius.radius = parsed_input;
             }
         }
