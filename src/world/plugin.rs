@@ -4,12 +4,12 @@ use bevy_atmosphere::prelude::*;
 
 use super::{
     atmosphere::{daylight_cycle, setup_environment, CycleTimer},
-    block::{spawn_cube, VertexScale},
+    block::VertexScale,
     chunk::{
         chunk_enter_listener, player_move_event_listener, render, setup_initial_chunks, Chunk,
         ChunkRadius, ChunkRegistry,
     },
-    commands::{chunk_despawn_command, chunk_radius_command},
+    commands::{chunk_despawn_command, chunk_radius_command, spawn_cube_command},
     events::{ChunkCreatedEvent, ChunkEnterEvent},
 };
 
@@ -23,11 +23,7 @@ impl Plugin for WorldPlugin {
         .insert_resource(VertexScale { scale: 1.0 })
         .insert_resource(ChunkRadius { radius: 3 })
         .insert_resource(Msaa::Sample4)
-        .insert_resource(AtmosphereModel::new(Nishita {
-            sun_position: Vec3::new(-1., 0., 0.),
-            rayleigh_coefficient: Vec3::new(1e-5, 1e-5, 1e-5),
-            ..default()
-        })) // Default Atmosphere material, we can edit it to simulate another planet
+        .insert_resource(AtmosphereModel::default())
         .insert_resource(CycleTimer(Timer::new(
             Duration::from_millis(50),
             TimerMode::Repeating,
@@ -35,7 +31,7 @@ impl Plugin for WorldPlugin {
         .add_plugins((AtmospherePlugin,))
         .add_event::<ChunkCreatedEvent>()
         .add_event::<ChunkEnterEvent>()
-        .add_systems(Update, spawn_cube)
+        .add_systems(Update, spawn_cube_command)
         .add_systems(Update, chunk_enter_listener)
         .add_systems(Update, render)
         .add_systems(Update, player_move_event_listener)

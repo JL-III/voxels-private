@@ -61,6 +61,7 @@ pub fn setup_initial_chunks(
                 chunk_create_event_write.send(ChunkCreatedEvent {
                     chunk: *chunk,
                     chunk_id: chunk_transform.id(),
+                    registry_size: chunk_registry.chunks.len(),
                 });
             }
         }
@@ -91,6 +92,7 @@ pub fn chunk_enter_listener(
                 chunk_create_event_write.send(ChunkCreatedEvent {
                     chunk: *chunk,
                     chunk_id: chunk_transform.id(),
+                    registry_size: chunk_registry.chunks.len(),
                 });
             }
         }
@@ -124,7 +126,7 @@ pub fn generate_chunk(x: isize, z: isize) -> Chunk {
     for x in 0..CHUNK_WIDTH {
         for y in 0..CHUNK_HEIGHT {
             for z in 0..CHUNK_DEPTH {
-                chunk.blocks[x][y][z] = Block::new(get_random_element(y));
+                chunk.blocks[x][y][z] = Block::new(get_random_element(x, y, z));
             }
         }
     }
@@ -179,12 +181,20 @@ pub fn player_move_event_listener(
     }
 }
 
-fn get_random_element(y: usize) -> Element {
-    match y {
-        _ if y == 10 => Element::Grass,
-        _ if y < 10 && y > 5 => Element::Dirt,
-        _ if y <= 5 => Element::Stone,
-        _ => Element::Air,
+use noise::{NoiseFn, Perlin};
+
+fn get_random_element(x: usize, y: usize, z: usize) -> Element {
+    let perlin = Perlin::new(1);
+    let noise_value = perlin.get([x as f64 * 0.1, y as f64 * 0.1, z as f64 * 0.1]);
+
+    // Adjust y based on noise (this is just an example, adjust as needed)
+    let adjusted_y = y as f64 + noise_value * 10.0;
+
+    match adjusted_y as usize {
+        _ if adjusted_y > 10.0 => Element::Air,
+        _ if adjusted_y <= 10.0 && adjusted_y > 5.0 => Element::Dirt,
+        _ if adjusted_y <= 5.0 => Element::Stone,
+        _ => Element::Grass,
     }
 }
 

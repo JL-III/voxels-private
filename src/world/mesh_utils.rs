@@ -7,6 +7,7 @@ use std::hash::Hasher;
 
 use super::block::{create_quad, BlockFace};
 use super::chunk::{CHUNK_DEPTH, CHUNK_HEIGHT, CHUNK_WIDTH};
+use super::element::Element;
 use super::events::ChunkCreatedEvent;
 
 #[derive(Clone)]
@@ -93,7 +94,13 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                     y as f32,
                     chunk_event.chunk.chunk_z as f32 * 15.0 + z as f32,
                 );
-                if x == CHUNK_WIDTH - 1 {
+                // exempt air from needing a mesh
+                if block.element == Element::Air {
+                    continue;
+                };
+                if x == CHUNK_WIDTH - 1
+                    || chunk_event.chunk.blocks[x + 1][y][z].element == Element::Air
+                {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::East,
@@ -101,7 +108,9 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if z == CHUNK_DEPTH - 1 {
+                if z == CHUNK_DEPTH - 1
+                    || chunk_event.chunk.blocks[x][y][z + 1].element == Element::Air
+                {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::North,
@@ -109,7 +118,9 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if y == CHUNK_HEIGHT - 1 {
+                if y == CHUNK_HEIGHT - 1
+                    || chunk_event.chunk.blocks[x][y + 1][z].element == Element::Air
+                {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::Top,
@@ -117,7 +128,7 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if y == 0 {
+                if y == 0 || chunk_event.chunk.blocks[x][y - 1][z].element == Element::Air {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::Bottom,
@@ -125,7 +136,7 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if z == 0 {
+                if z == 0 || chunk_event.chunk.blocks[x][y][z - 1].element == Element::Air {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::South,
@@ -133,7 +144,7 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if x == 0 {
+                if x == 0 || chunk_event.chunk.blocks[x - 1][y][z].element == Element::Air {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::West,

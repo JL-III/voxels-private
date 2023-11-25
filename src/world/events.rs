@@ -6,6 +6,7 @@ use super::chunk::Chunk;
 pub struct ChunkCreatedEvent {
     pub chunk: Chunk,
     pub chunk_id: Entity,
+    pub registry_size: usize,
 }
 
 #[derive(Event)]

@@ -5,14 +5,14 @@ use bevy::prelude::*;
 use bevy_debug_grid::DebugGridPlugin;
 use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
 use command_system::plugin::CommandPlugin;
-use coordinate_system::plugin::CoordinatePlugin;
+use debug_menu::plugin::DebugPlugin;
 use main_menu::plugin::MainMenuPlugin;
 use player::plugin::PlayerPlugin;
 use world::plugin::WorldPlugin;
 
 mod app_state;
 mod command_system;
-mod coordinate_system;
+mod debug_menu;
 mod main_menu;
 mod player;
 mod world;
@@ -25,7 +25,7 @@ fn main() {
         .add_plugins(AppStatePlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(WorldPlugin)
-        .add_plugins(CoordinatePlugin)
+        .add_plugins(DebugPlugin)
         .add_plugins(MainMenuPlugin)
         .add_plugins(CommandPlugin)
         .add_plugins((DebugGridPlugin::with_floor_grid(),))

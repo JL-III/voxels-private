@@ -9,7 +9,8 @@ bevy_screen_diagnostics = "0.4.0"
 rand = "0.8.0"
 bevy_spectator = "0.4"
 bevy_atmosphere = "0.8.1"
-bevy_debug_grid = "0.3"
+bevy_debug_grid = "0.4"
+noise = "0.8.2"
 
 
 [profile.dev.package."*"]
