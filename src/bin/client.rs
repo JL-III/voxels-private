@@ -16,7 +16,11 @@ use renet_visualizer::{RenetClientVisualizer, RenetVisualizerStyle};
 use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 
 // Use the re-exported modules and types
-use voxels::{*, app_state::plugin::AppStatePlugin, player::plugin::PlayerPlugin, world::plugin::WorldPlugin, debug_menu::plugin::DebugPlugin, main_menu::plugin::MainMenuPlugin, command_system::plugin::CommandPlugin};
+use voxels::{
+    app_state::plugin::AppStatePlugin, command_system::plugin::CommandPlugin,
+    debug_menu::plugin::DebugPlugin, main_menu::plugin::MainMenuPlugin,
+    player::plugin::PlayerPlugin, world::plugin::WorldPlugin, *,
+};
 
 #[derive(Component)]
 struct ControlledPlayer;
@@ -64,15 +68,15 @@ fn main() {
     app.add_plugins(LogDiagnosticsPlugin::default());
     app.add_plugins(bevy_renet::transport::NetcodeClientPlugin);
     app.add_plugins(DefaultPlugins)
-    .add_plugins(ScreenDiagnosticsPlugin::default())
-    .add_plugins(ScreenFrameDiagnosticsPlugin)
-    .add_plugins(AppStatePlugin)
-    .add_plugins(PlayerPlugin)
-    .add_plugins(WorldPlugin)
-    .add_plugins(DebugPlugin)
-    .add_plugins(MainMenuPlugin)
-    .add_plugins(CommandPlugin)
-    .add_plugins((DebugGridPlugin::with_floor_grid(),));
+        .add_plugins(ScreenDiagnosticsPlugin::default())
+        .add_plugins(ScreenFrameDiagnosticsPlugin)
+        .add_plugins(AppStatePlugin)
+        .add_plugins(PlayerPlugin)
+        .add_plugins(WorldPlugin)
+        .add_plugins(DebugPlugin)
+        .add_plugins(MainMenuPlugin)
+        .add_plugins(CommandPlugin)
+        .add_plugins((DebugGridPlugin::with_floor_grid(),));
     app.insert_resource(client);
     app.insert_resource(transport);
     app.insert_resource(CurrentClientId(client_id));

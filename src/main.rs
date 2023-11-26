@@ -1,24 +1,21 @@
-use std::process::{Command, Child};
 use std::io;
+use std::process::{Child, Command};
 use std::thread;
 use std::time::Duration;
 
 fn run_server() -> io::Result<Child> {
-    let server = Command::new("target/debug/server")
-        .spawn()?;
+    let server = Command::new("target/debug/server").spawn()?;
 
     Ok(server)
 }
 
 fn run_client() -> io::Result<Child> {
-    let client = Command::new("target/debug/client")
-        .spawn()?;
+    let client = Command::new("target/debug/client").spawn()?;
 
     Ok(client)
 }
 
 fn main() -> io::Result<()> {
-
     let mut server = run_server()?;
 
     let mut client = run_client()?;
