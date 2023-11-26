@@ -5,4 +5,4 @@ pub(crate) mod commands;
 mod element;
 pub(crate) mod events;
 mod mesh_utils;
-pub(crate) mod plugin;
+pub mod plugin;

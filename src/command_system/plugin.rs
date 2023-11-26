@@ -3,7 +3,7 @@ use bevy::{
     ecs::schedule::{common_conditions::in_state, IntoSystemConfigs, OnEnter, OnExit},
 };
 
-use crate::AppState;
+use crate::app_state::state::AppState;
 
 use super::{
     command_interface::{

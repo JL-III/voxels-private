@@ -1,9 +1,9 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 
+use crate::app_state::state::AppState;
 use crate::main_menu::components::*;
 use crate::main_menu::styles::*;
-use crate::AppState;
 
 pub fn interact_with_play_button(
     mut button_query: Query<

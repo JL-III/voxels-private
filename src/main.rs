@@ -1,33 +1,44 @@
-#![deny(clippy::unwrap_used)]
-use app_state::{plugin::AppStatePlugin, state::AppState};
-use bevy::prelude::*;
+use std::process::{Command, Child};
+use std::io;
+use std::thread;
+use std::time::Duration;
 
-use bevy_debug_grid::DebugGridPlugin;
-use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
-use command_system::plugin::CommandPlugin;
-use debug_menu::plugin::DebugPlugin;
-use main_menu::plugin::MainMenuPlugin;
-use player::plugin::PlayerPlugin;
-use world::plugin::WorldPlugin;
+fn run_server() -> io::Result<Child> {
+    let server = Command::new("target/debug/server")
+        .spawn()?;
 
-mod app_state;
-mod command_system;
-mod debug_menu;
-mod main_menu;
-mod player;
-mod world;
+    Ok(server)
+}
 
-fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(ScreenDiagnosticsPlugin::default())
-        .add_plugins(ScreenFrameDiagnosticsPlugin)
-        .add_plugins(AppStatePlugin)
-        .add_plugins(PlayerPlugin)
-        .add_plugins(WorldPlugin)
-        .add_plugins(DebugPlugin)
-        .add_plugins(MainMenuPlugin)
-        .add_plugins(CommandPlugin)
-        .add_plugins((DebugGridPlugin::with_floor_grid(),))
-        .run();
+fn run_client() -> io::Result<Child> {
+    let client = Command::new("target/debug/client")
+        .spawn()?;
+
+    Ok(client)
+}
+
+fn main() -> io::Result<()> {
+
+    let mut server = run_server()?;
+
+    let mut client = run_client()?;
+
+    thread::sleep(Duration::from_secs(1));
+
+    match client.wait() {
+        Ok(status) => println!("Client exited with status: {}", status),
+        Err(e) => eprintln!("Error waiting for client process: {}", e),
+    }
+
+    match server.kill() {
+        Ok(_) => println!("Server process was killed"),
+        Err(e) => eprintln!("Error killing server process: {}", e),
+    }
+
+    match server.wait() {
+        Ok(status) => println!("Server exited with status: {}", status),
+        Err(e) => eprintln!("Error waiting for server process: {}", e),
+    }
+
+    Ok(())
 }

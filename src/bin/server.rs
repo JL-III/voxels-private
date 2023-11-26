@@ -1,4 +1,9 @@
+use bevy_renet::renet::transport::{NetcodeServerTransport, ServerAuthentication, ServerConfig};
 use std::{collections::HashMap, f32::consts::PI};
+
+use bevy_renet::transport::NetcodeServerPlugin;
+use std::{net::UdpSocket, time::SystemTime};
+use voxels::{connection_config, PROTOCOL_ID};
 
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
@@ -30,15 +35,36 @@ struct Bot {
 #[derive(Debug, Resource)]
 struct BotId(u64);
 
-#[cfg(feature = "transport")]
-fn add_netcode_network(app: &mut App) {
-    use bevy_renet::renet::transport::{
-        NetcodeServerTransport, ServerAuthentication, ServerConfig,
-    };
-    use bevy_renet::transport::NetcodeServerPlugin;
-    use std::{net::UdpSocket, time::SystemTime};
-    use voxels::{connection_config, PROTOCOL_ID};
+fn main() {
+    let mut app = App::new();
+    app.add_plugins(DefaultPlugins);
 
+    app.add_plugins(RenetServerPlugin);
+    app.add_plugins(FrameTimeDiagnosticsPlugin);
+    app.add_plugins(LogDiagnosticsPlugin::default());
+    app.add_plugins(EguiPlugin);
+
+    app.insert_resource(ServerLobby::default());
+    app.insert_resource(BotId(0));
+
+    app.insert_resource(RenetServerVisualizer::<200>::default());
+
+    app.add_systems(
+        Update,
+        (
+            server_update_system,
+            server_network_sync,
+            move_players_system,
+            update_projectiles_system,
+            update_visulizer_system,
+            spawn_bot,
+            bot_autocast,
+        ),
+    );
+
+    app.add_systems(FixedUpdate, apply_velocity_system);
+    app.add_systems(PostUpdate, projectile_on_removal_system);
+    app.add_systems(Startup, (setup_level, setup_simple_camera));
     app.add_plugins(NetcodeServerPlugin);
 
     let server = RenetServer::new(connection_config());
@@ -59,43 +85,6 @@ fn add_netcode_network(app: &mut App) {
     let transport = NetcodeServerTransport::new(server_config, socket).unwrap();
     app.insert_resource(server);
     app.insert_resource(transport);
-}
-
-fn main() {
-    let mut app = App::new();
-    app.add_plugins(DefaultPlugins);
-
-    app.add_plugins(RenetServerPlugin);
-    app.add_plugins(FrameTimeDiagnosticsPlugin);
-    app.add_plugins(LogDiagnosticsPlugin::default());
-    app.add_plugins(EguiPlugin);
-
-    app.insert_resource(ServerLobby::default());
-    app.insert_resource(BotId(0));
-
-    app.insert_resource(RenetServerVisualizer::<200>::default());
-
-    #[cfg(feature = "transport")]
-    add_netcode_network(&mut app);
-
-    app.add_systems(
-        Update,
-        (
-            server_update_system,
-            server_network_sync,
-            move_players_system,
-            update_projectiles_system,
-            update_visulizer_system,
-            spawn_bot,
-            bot_autocast,
-        ),
-    );
-
-    app.add_systems(FixedUpdate, apply_velocity_system);
-
-    app.add_systems(PostUpdate, projectile_on_removal_system);
-
-    app.add_systems(Startup, (setup_level, setup_simple_camera));
 
     app.run();
 }

@@ -1,21 +1,22 @@
-use std::collections::HashMap;
-
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::{shape::Icosphere, *},
-    window::PrimaryWindow,
 };
-use bevy_egui::{EguiContexts, EguiPlugin};
+use bevy_debug_grid::DebugGridPlugin;
 use bevy_renet::{
-    renet::{ClientId, RenetClient},
+    client_connected,
+    renet::{
+        transport::{ClientAuthentication, NetcodeClientTransport, NetcodeTransportError},
+        ClientId, RenetClient,
+    },
     RenetClientPlugin,
 };
+use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
 use renet_visualizer::{RenetClientVisualizer, RenetVisualizerStyle};
-use smooth_bevy_cameras::{LookTransform, LookTransformBundle, LookTransformPlugin, Smoother};
-use voxels::{
-    setup_level, ClientChannel, NetworkedEntities, PlayerCommand, PlayerInput, ServerChannel,
-    ServerMessages,
-};
+use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
+
+// Use the re-exported modules and types
+use voxels::{*, app_state::plugin::AppStatePlugin, player::plugin::PlayerPlugin, world::plugin::WorldPlugin, debug_menu::plugin::DebugPlugin, main_menu::plugin::MainMenuPlugin, command_system::plugin::CommandPlugin};
 
 #[derive(Component)]
 struct ControlledPlayer;
@@ -40,22 +41,9 @@ struct CurrentClientId(u64);
 #[derive(SystemSet, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Connected;
 
-#[cfg(feature = "transport")]
-fn add_netcode_network(app: &mut App) {
-    use bevy_renet::client_connected;
-    use bevy_renet::renet::transport::{
-        ClientAuthentication, NetcodeClientTransport, NetcodeTransportError,
-    };
-    use std::{net::UdpSocket, time::SystemTime};
-    use voxels::connection_config;
-    use voxels::PROTOCOL_ID;
-
-    app.add_plugins(bevy_renet::transport::NetcodeClientPlugin);
-
-    app.configure_sets(Update, Connected.run_if(client_connected()));
-
+fn main() {
+    let mut app = App::new();
     let client = RenetClient::new(connection_config());
-
     let server_addr = "127.0.0.1:5000".parse().unwrap();
     let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
     let current_time = SystemTime::now()
@@ -68,104 +56,75 @@ fn add_netcode_network(app: &mut App) {
         server_addr,
         user_data: None,
     };
-
     let transport = NetcodeClientTransport::new(current_time, authentication, socket).unwrap();
-
+    app.configure_sets(Update, Connected.run_if(client_connected()));
+    app.add_event::<PlayerCommand>();
+    app.add_plugins(RenetClientPlugin);
+    app.add_plugins(FrameTimeDiagnosticsPlugin);
+    app.add_plugins(LogDiagnosticsPlugin::default());
+    app.add_plugins(bevy_renet::transport::NetcodeClientPlugin);
+    app.add_plugins(DefaultPlugins)
+    .add_plugins(ScreenDiagnosticsPlugin::default())
+    .add_plugins(ScreenFrameDiagnosticsPlugin)
+    .add_plugins(AppStatePlugin)
+    .add_plugins(PlayerPlugin)
+    .add_plugins(WorldPlugin)
+    .add_plugins(DebugPlugin)
+    .add_plugins(MainMenuPlugin)
+    .add_plugins(CommandPlugin)
+    .add_plugins((DebugGridPlugin::with_floor_grid(),));
     app.insert_resource(client);
     app.insert_resource(transport);
     app.insert_resource(CurrentClientId(client_id));
-
-    // If any error is found we just panic
-    fn panic_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {
-        for e in renet_error.read() {
-            panic!("{}", e);
-        }
-    }
-
-    app.add_systems(Update, panic_on_error_system);
-}
-
-fn main() {
-    let mut app = App::new();
-    app.add_plugins(DefaultPlugins);
-    app.add_plugins(RenetClientPlugin);
-    app.add_plugins(LookTransformPlugin);
-    app.add_plugins(FrameTimeDiagnosticsPlugin);
-    app.add_plugins(LogDiagnosticsPlugin::default());
-    app.add_plugins(EguiPlugin);
-
-    #[cfg(feature = "transport")]
-    add_netcode_network(&mut app);
-
-    app.add_event::<PlayerCommand>();
-
     app.insert_resource(ClientLobby::default());
-    app.insert_resource(PlayerInput::default());
+    // app.insert_resource(PlayerInput::default());
     app.insert_resource(NetworkMapping::default());
-
-    app.add_systems(Update, (player_input, camera_follow, update_target_system));
+    app.insert_resource(RenetClientVisualizer::<200>::new(
+        RenetVisualizerStyle::default(),
+    ));
+    app.add_systems(Update, panic_on_error_system);
     app.add_systems(
         Update,
         (
-            client_send_input,
+            // client_send_input,
             client_send_player_commands,
             client_sync_players,
         )
             .in_set(Connected),
     );
-
-    app.insert_resource(RenetClientVisualizer::<200>::new(
-        RenetVisualizerStyle::default(),
-    ));
-
-    app.add_systems(Startup, (setup_level, setup_camera, setup_target));
-    app.add_systems(Update, update_visulizer_system);
+    // app.add_systems(Update, update_visualizer_system);
 
     app.run();
 }
 
-fn update_visulizer_system(
-    mut egui_contexts: EguiContexts,
-    mut visualizer: ResMut<RenetClientVisualizer<200>>,
-    client: Res<RenetClient>,
-    mut show_visualizer: Local<bool>,
-    keyboard_input: Res<Input<KeyCode>>,
-) {
-    visualizer.add_network_info(client.network_info());
-    if keyboard_input.just_pressed(KeyCode::F1) {
-        *show_visualizer = !*show_visualizer;
-    }
-    if *show_visualizer {
-        visualizer.show_window(egui_contexts.ctx_mut());
+// If any error is found we just panic
+fn panic_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {
+    for e in renet_error.read() {
+        panic!("{}", e);
     }
 }
 
-fn player_input(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut player_input: ResMut<PlayerInput>,
-    mouse_button_input: Res<Input<MouseButton>>,
-    target_query: Query<&Transform, With<Target>>,
-    mut player_commands: EventWriter<PlayerCommand>,
-) {
-    player_input.left = keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left);
-    player_input.right =
-        keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right);
-    player_input.up = keyboard_input.pressed(KeyCode::W) || keyboard_input.pressed(KeyCode::Up);
-    player_input.down = keyboard_input.pressed(KeyCode::S) || keyboard_input.pressed(KeyCode::Down);
+// fn update_visualizer_system(
+//     mut egui_contexts: EguiContexts,
+//     mut visualizer: ResMut<RenetClientVisualizer<200>>,
+//     client: Res<RenetClient>,
+//     mut show_visualizer: Local<bool>,
+//     keyboard_input: Res<Input<KeyCode>>,
+// ) {
+//     visualizer.add_network_info(client.network_info());
+//     if keyboard_input.just_pressed(KeyCode::F1) {
+//         *show_visualizer = !*show_visualizer;
+//     }
+//     if *show_visualizer {
+//         visualizer.show_window(egui_contexts.ctx_mut());
+//     }
+// }
 
-    if mouse_button_input.just_pressed(MouseButton::Left) {
-        let target_transform = target_query.single();
-        player_commands.send(PlayerCommand::BasicAttack {
-            cast_at: target_transform.translation,
-        });
-    }
-}
+// fn client_send_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
+//     let input_message = bincode::serialize(&*player_input).unwrap();
 
-fn client_send_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
-    let input_message = bincode::serialize(&*player_input).unwrap();
-
-    client.send_message(ClientChannel::Input, input_message);
-}
+//     client.send_message(ClientChannel::Input, input_message);
+// }
 
 fn client_send_player_commands(
     mut player_commands: EventReader<PlayerCommand>,
@@ -264,74 +223,5 @@ fn client_sync_players(
                 commands.entity(*entity).insert(transform);
             }
         }
-    }
-}
-
-#[derive(Component)]
-struct Target;
-
-fn update_target_system(
-    primary_window: Query<&Window, With<PrimaryWindow>>,
-    mut target_query: Query<&mut Transform, With<Target>>,
-    camera_query: Query<(&Camera, &GlobalTransform)>,
-) {
-    let (camera, camera_transform) = camera_query.single();
-    let mut target_transform = target_query.single_mut();
-    if let Some(cursor_pos) = primary_window.single().cursor_position() {
-        if let Some(ray) = camera.viewport_to_world(camera_transform, cursor_pos) {
-            if let Some(distance) = ray.intersect_plane(Vec3::Y, Vec3::Y) {
-                target_transform.translation = ray.direction * distance + ray.origin;
-            }
-        }
-    }
-}
-
-fn setup_camera(mut commands: Commands) {
-    commands
-        .spawn(LookTransformBundle {
-            transform: LookTransform {
-                eye: Vec3::new(0.0, 8., 2.5),
-                target: Vec3::new(0.0, 0.5, 0.0),
-                up: Vec3::Y,
-            },
-            smoother: Smoother::new(0.9),
-        })
-        .insert(Camera3dBundle {
-            transform: Transform::from_xyz(0., 8.0, 2.5)
-                .looking_at(Vec3::new(0.0, 0.5, 0.0), Vec3::Y),
-            ..default()
-        });
-}
-
-fn setup_target(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(
-                Mesh::try_from(Icosphere {
-                    radius: 0.1,
-                    subdivisions: 5,
-                })
-                .unwrap(),
-            ),
-            material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-            transform: Transform::from_xyz(0.0, 0., 0.0),
-            ..Default::default()
-        })
-        .insert(Target);
-}
-
-fn camera_follow(
-    mut camera_query: Query<&mut LookTransform, (With<Camera>, Without<ControlledPlayer>)>,
-    player_query: Query<&Transform, With<ControlledPlayer>>,
-) {
-    let mut cam_transform = camera_query.single_mut();
-    if let Ok(player_transform) = player_query.get_single() {
-        cam_transform.eye.x = player_transform.translation.x;
-        cam_transform.eye.z = player_transform.translation.z + 2.5;
-        cam_transform.target = player_transform.translation;
     }
 }

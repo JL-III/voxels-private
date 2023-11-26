@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::AppState;
+use crate::app_state::state::AppState;
 
 use super::{
     interactions::{interact_with_play_button, interact_with_quit_button},
