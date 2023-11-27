@@ -8,9 +8,9 @@ use bevy_renet::renet::RenetClient;
 use crate::{
     player::{
         events::PlayerMoveEvent,
-        lib::{convert_player_move_event, InputState, MovementSettings, Player},
+        lib::{InputState, MovementSettings, Player},
     },
-    ClientChannel,
+    ClientChannel, PlayerInput,
 };
 
 pub fn client_player_move(
@@ -56,8 +56,11 @@ pub fn client_player_move(
             if player_move_event.starting_position != player_move_event.final_position {
                 let player_input = convert_player_move_event(&player_move_event);
                 player_move_event_writer.send(player_move_event);
-                let player_input_message = bincode::serialize(&player_input).unwrap();
-                client.send_message(ClientChannel::Input, player_input_message);
+                if let Ok(player_input_message) = bincode::serialize(&player_input) {
+                    client.send_message(ClientChannel::Input, player_input_message);
+                } else {
+                    warn!("could not serialize player_input_message");
+                }
             }
         }
     } else {
@@ -117,5 +120,16 @@ pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWind
         grab_cursor(window_query);
     } else {
         warn!("Primary window not found for `initial_grab_cursor`!")
+    }
+}
+
+fn convert_player_move_event(player_move_event: &PlayerMoveEvent) -> PlayerInput {
+    PlayerInput {
+        up: player_move_event.starting_position.y < player_move_event.final_position.y,
+        down: player_move_event.starting_position.y > player_move_event.final_position.y,
+        left: player_move_event.starting_position.x < player_move_event.final_position.x,
+        right: player_move_event.starting_position.x > player_move_event.final_position.x,
+        forward: player_move_event.starting_position.z < player_move_event.final_position.z,
+        backward: player_move_event.starting_position.z > player_move_event.final_position.z,
     }
 }

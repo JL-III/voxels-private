@@ -17,10 +17,6 @@ pub fn server_player_move(
         while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
             if let Ok(player_move) = bincode::deserialize::<PlayerInput>(&message) {
                 for mut transform in transform_query.iter_mut() {
-                    // let mut player_move_event = PlayerMoveEvent {
-                    //   starting_position: transform.translation,
-                    //   final_position: transform.translation,
-                    // };
                     let mut velocity = Vec3::ZERO;
                     let local_z = transform.local_z();
                     let forward = Vec3::new(local_z.x, 0., local_z.z);

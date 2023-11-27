@@ -1,11 +1,7 @@
-use bevy::{
-    app::{App, FixedUpdate, Plugin, Startup},
-    ecs::schedule::{common_conditions::in_state, IntoSystemConfigs},
-};
+use bevy::app::{App, FixedUpdate, Plugin, Startup};
 use bevy_renet::renet::RenetClient;
 
 use crate::{
-    app_state::state::AppState,
     connection_config,
     player::{
         events::{PlayerMoveEvent, PlayerSpawnEvent},
@@ -27,9 +23,6 @@ impl Plugin for PlayerServerPlugin {
             .add_event::<PlayerMoveEvent>()
             .add_event::<PlayerSpawnEvent>()
             .add_systems(Startup, setup_server_player)
-            .add_systems(
-                FixedUpdate,
-                (server_player_move).run_if(in_state(AppState::Game)),
-            );
+            .add_systems(FixedUpdate, server_player_move);
     }
 }

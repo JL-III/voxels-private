@@ -1,8 +1,6 @@
 use bevy::{ecs::event::ManualEventReader, input::mouse::MouseMotion, prelude::*};
 
-use crate::{command_system::events::CommandDispatchEvent, PlayerInput};
-
-use super::events::PlayerMoveEvent;
+use crate::command_system::events::CommandDispatchEvent;
 
 #[derive(Resource, Default)]
 pub struct InputState {
@@ -28,17 +26,6 @@ impl Default for MovementSettings {
 
 #[derive(Component)]
 pub struct Player {}
-
-pub fn convert_player_move_event(player_move_event: &PlayerMoveEvent) -> PlayerInput {
-    PlayerInput {
-        up: player_move_event.starting_position.y < player_move_event.final_position.y,
-        down: player_move_event.starting_position.y > player_move_event.final_position.y,
-        left: player_move_event.starting_position.x < player_move_event.final_position.x,
-        right: player_move_event.starting_position.x > player_move_event.final_position.x,
-        forward: player_move_event.starting_position.z < player_move_event.final_position.z,
-        backward: player_move_event.starting_position.z > player_move_event.final_position.z,
-    }
-}
 
 pub fn speed_command(
     mut command_dispatch_event_reader: EventReader<CommandDispatchEvent>,
