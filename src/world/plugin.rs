@@ -21,7 +21,7 @@ impl Plugin for WorldPlugin {
             chunks: Vec::<Vec3>::new(),
         })
         .insert_resource(VertexScale { scale: 1.0 })
-        .insert_resource(ChunkRadius { radius: 5 })
+        .insert_resource(ChunkRadius { radius: 3 })
         .insert_resource(ChunkQueue { chunks: Vec::new() })
         .insert_resource(Msaa::Sample4)
         .insert_resource(AtmosphereModel::default())

@@ -1,3 +1,4 @@
-pub(crate) mod controls;
+pub mod client;
 pub(crate) mod events;
-pub mod plugin;
+pub(crate) mod lib;
+pub mod server;

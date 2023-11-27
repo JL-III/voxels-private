@@ -7,8 +7,9 @@ use bevy::{
 };
 
 use bevy_atmosphere::prelude::*;
+use bevy_renet::renet::RenetClient;
 
-use crate::command_system::events::CommandDispatchEvent;
+use crate::{command_system::events::CommandDispatchEvent, ClientChannel, PlayerInput};
 
 use super::events::{PlayerMoveEvent, PlayerSpawnEvent};
 
@@ -90,6 +91,7 @@ pub fn player_move(
     window_query: Query<&Window, With<PrimaryWindow>>,
     settings: Res<MovementSettings>,
     mut transform_query: Query<&mut Transform, With<Player>>,
+    mut client: ResMut<RenetClient>,
 ) {
     if let Ok(window) = window_query.get_single() {
         for mut transform in transform_query.iter_mut() {
@@ -123,11 +125,25 @@ pub fn player_move(
 
             player_move_event.final_position = transform.translation;
             if player_move_event.starting_position != player_move_event.final_position {
+                let player_input = convert_player_move_event(&player_move_event);
                 player_move_event_writer.send(player_move_event);
+                let player_input_message = bincode::serialize(&player_input).unwrap();
+                client.send_message(ClientChannel::Input, player_input_message);
             }
         }
     } else {
         warn!("Primary window not found for `player_move`!")
+    }
+}
+
+fn convert_player_move_event(player_move_event: &PlayerMoveEvent) -> PlayerInput {
+    PlayerInput {
+        up: player_move_event.starting_position.y < player_move_event.final_position.y,
+        down: player_move_event.starting_position.y > player_move_event.final_position.y,
+        left: player_move_event.starting_position.x < player_move_event.final_position.x,
+        right: player_move_event.starting_position.x > player_move_event.final_position.x,
+        forward: player_move_event.starting_position.z < player_move_event.final_position.z,
+        backward: player_move_event.starting_position.z > player_move_event.final_position.z,
     }
 }
 

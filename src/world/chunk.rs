@@ -113,7 +113,7 @@ pub fn load_chunk_from_queue(
     mut chunk_queue: ResMut<ChunkQueue>,
     mut prepare_chunk_load_event_write: EventWriter<PrepareChunkLoadEvent>,
 ) {
-    let chunks_to_update = 5;
+    let chunks_to_update = 3;
     for _ in 0..chunks_to_update {
         if let Some(chunk) = chunk_queue.chunks.pop() {
             prepare_chunk_load_event_write.send(PrepareChunkLoadEvent {

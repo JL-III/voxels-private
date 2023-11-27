@@ -1,6 +1,6 @@
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
-    prelude::{shape::Icosphere, *},
+    prelude::*,
 };
 use bevy_debug_grid::DebugGridPlugin;
 use bevy_renet::{
@@ -15,11 +15,10 @@ use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlu
 use renet_visualizer::{RenetClientVisualizer, RenetVisualizerStyle};
 use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 
-// Use the re-exported modules and types
 use voxels::{
     app_state::plugin::AppStatePlugin, command_system::plugin::CommandPlugin,
     debug_menu::plugin::DebugPlugin, main_menu::plugin::MainMenuPlugin,
-    player::plugin::PlayerPlugin, world::plugin::WorldPlugin, *,
+    player::client::plugin::PlayerClientPlugin, world::plugin::WorldPlugin, *,
 };
 
 #[derive(Component)]
@@ -62,7 +61,6 @@ fn main() {
     };
     let transport = NetcodeClientTransport::new(current_time, authentication, socket).unwrap();
     app.configure_sets(Update, Connected.run_if(client_connected()));
-    app.add_event::<PlayerCommand>();
     app.add_plugins(RenetClientPlugin);
     app.add_plugins(FrameTimeDiagnosticsPlugin);
     app.add_plugins(LogDiagnosticsPlugin::default());
@@ -71,7 +69,7 @@ fn main() {
         .add_plugins(ScreenDiagnosticsPlugin::default())
         .add_plugins(ScreenFrameDiagnosticsPlugin)
         .add_plugins(AppStatePlugin)
-        .add_plugins(PlayerPlugin)
+        .add_plugins(PlayerClientPlugin)
         .add_plugins(WorldPlugin)
         .add_plugins(DebugPlugin)
         .add_plugins(MainMenuPlugin)
@@ -81,23 +79,12 @@ fn main() {
     app.insert_resource(transport);
     app.insert_resource(CurrentClientId(client_id));
     app.insert_resource(ClientLobby::default());
-    // app.insert_resource(PlayerInput::default());
     app.insert_resource(NetworkMapping::default());
     app.insert_resource(RenetClientVisualizer::<200>::new(
         RenetVisualizerStyle::default(),
     ));
     app.add_systems(Update, panic_on_error_system);
-    app.add_systems(
-        Update,
-        (
-            // client_send_input,
-            client_send_player_commands,
-            client_sync_players,
-        )
-            .in_set(Connected),
-    );
-    // app.add_systems(Update, update_visualizer_system);
-
+    app.add_systems(Update, (client_sync_players,).in_set(Connected));
     app.run();
 }
 
@@ -105,38 +92,6 @@ fn main() {
 fn panic_on_error_system(mut renet_error: EventReader<NetcodeTransportError>) {
     for e in renet_error.read() {
         panic!("{}", e);
-    }
-}
-
-// fn update_visualizer_system(
-//     mut egui_contexts: EguiContexts,
-//     mut visualizer: ResMut<RenetClientVisualizer<200>>,
-//     client: Res<RenetClient>,
-//     mut show_visualizer: Local<bool>,
-//     keyboard_input: Res<Input<KeyCode>>,
-// ) {
-//     visualizer.add_network_info(client.network_info());
-//     if keyboard_input.just_pressed(KeyCode::F1) {
-//         *show_visualizer = !*show_visualizer;
-//     }
-//     if *show_visualizer {
-//         visualizer.show_window(egui_contexts.ctx_mut());
-//     }
-// }
-
-// fn client_send_input(player_input: Res<PlayerInput>, mut client: ResMut<RenetClient>) {
-//     let input_message = bincode::serialize(&*player_input).unwrap();
-
-//     client.send_message(ClientChannel::Input, input_message);
-// }
-
-fn client_send_player_commands(
-    mut player_commands: EventReader<PlayerCommand>,
-    mut client: ResMut<RenetClient>,
-) {
-    for command in player_commands.read() {
-        let command_message = bincode::serialize(command).unwrap();
-        client.send_message(ClientChannel::Command, command_message);
     }
 }
 
@@ -187,44 +142,6 @@ fn client_sync_players(
                     commands.entity(client_entity).despawn();
                     network_mapping.0.remove(&server_entity);
                 }
-            }
-            ServerMessages::SpawnProjectile {
-                entity,
-                translation,
-            } => {
-                let projectile_entity = commands.spawn(PbrBundle {
-                    mesh: meshes.add(
-                        Mesh::try_from(Icosphere {
-                            radius: 0.1,
-                            subdivisions: 5,
-                        })
-                        .unwrap(),
-                    ),
-                    material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-                    transform: Transform::from_translation(translation.into()),
-                    ..Default::default()
-                });
-                network_mapping.0.insert(entity, projectile_entity.id());
-            }
-            ServerMessages::DespawnProjectile { entity } => {
-                if let Some(entity) = network_mapping.0.remove(&entity) {
-                    commands.entity(entity).despawn();
-                }
-            }
-        }
-    }
-
-    while let Some(message) = client.receive_message(ServerChannel::NetworkedEntities) {
-        let networked_entities: NetworkedEntities = bincode::deserialize(&message).unwrap();
-
-        for i in 0..networked_entities.entities.len() {
-            if let Some(entity) = network_mapping.0.get(&networked_entities.entities[i]) {
-                let translation = networked_entities.translations[i].into();
-                let transform = Transform {
-                    translation,
-                    ..Default::default()
-                };
-                commands.entity(*entity).insert(transform);
             }
         }
     }

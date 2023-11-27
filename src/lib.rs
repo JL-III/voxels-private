@@ -1,6 +1,6 @@
-use std::{f32::consts::PI, time::Duration};
+use std::time::Duration;
 
-use bevy::prelude::{shape::Icosphere, *};
+use bevy::prelude::*;
 use bevy_renet::renet::{ChannelConfig, ClientId, ConnectionConfig, SendType};
 use serde::{Deserialize, Serialize};
 
@@ -26,12 +26,10 @@ pub struct PlayerInput {
     pub down: bool,
     pub left: bool,
     pub right: bool,
+    pub forward: bool,
+    pub backward: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Component, Event)]
-pub enum PlayerCommand {
-    BasicAttack { cast_at: Vec3 },
-}
 pub enum ClientChannel {
     Input,
     Command,
@@ -40,9 +38,6 @@ pub enum ServerChannel {
     ServerMessages,
     NetworkedEntities,
 }
-
-#[derive(Debug, Default, Component)]
-pub struct Velocity(pub Vec3);
 
 #[derive(Debug, Serialize, Deserialize, Component)]
 pub enum ServerMessages {
@@ -54,19 +49,6 @@ pub enum ServerMessages {
     PlayerRemove {
         id: ClientId,
     },
-    SpawnProjectile {
-        entity: Entity,
-        translation: [f32; 3],
-    },
-    DespawnProjectile {
-        entity: Entity,
-    },
-}
-
-#[derive(Debug, Serialize, Deserialize, Default)]
-pub struct NetworkedEntities {
-    pub entities: Vec<Entity>,
-    pub translations: Vec<[f32; 3]>,
 }
 
 impl From<ClientChannel> for u8 {
@@ -133,67 +115,4 @@ pub fn connection_config() -> ConnectionConfig {
         client_channels_config: ClientChannel::channels_config(),
         server_channels_config: ServerChannel::channels_config(),
     }
-}
-
-/// set up a simple 3D scene
-pub fn setup_level(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    // plane
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Box::new(40., 1., 40.))),
-        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-        transform: Transform::from_xyz(0.0, -1.0, 0.0),
-        ..Default::default()
-    });
-    // light
-    commands.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform {
-            translation: Vec3::new(0.0, 2.0, 0.0),
-            rotation: Quat::from_rotation_x(-PI / 4.),
-            ..default()
-        },
-        ..default()
-    });
-}
-
-#[derive(Debug, Component)]
-pub struct Projectile {
-    pub duration: Timer,
-}
-
-pub fn spawn_fireball(
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
-    translation: Vec3,
-    mut direction: Vec3,
-) -> Entity {
-    if !direction.is_normalized() {
-        direction = Vec3::X;
-    }
-    commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(
-                Mesh::try_from(Icosphere {
-                    radius: 0.1,
-                    subdivisions: 5,
-                })
-                .unwrap(),
-            ),
-            material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-            transform: Transform::from_translation(translation),
-            ..Default::default()
-        })
-        .insert(Velocity(direction * 10.))
-        .insert(Projectile {
-            duration: Timer::from_seconds(1.5, TimerMode::Once),
-        })
-        .id()
 }

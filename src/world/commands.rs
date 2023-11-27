@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     command_system::events::CommandDispatchEvent,
-    player::controls::Player,
+    player::lib::Player,
     world::{
         block::{create_quad, Block},
         mesh_utils::merge_meshes,
