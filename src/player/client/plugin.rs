@@ -9,11 +9,13 @@ use crate::{
     connection_config,
     player::{
         events::{PlayerMoveEvent, PlayerSpawnEvent},
-        lib::{
-            grab_cursor, initial_grab_cursor, player_look, player_move, release_cursor,
-            setup_player, speed_command, teleport_command, InputState, MovementSettings,
-        },
+        lib::{speed_command, teleport_command, InputState, MovementSettings},
     },
+};
+
+use super::{
+    controls::{client_player_move, grab_cursor, initial_grab_cursor, player_look, release_cursor},
+    setup::setup_client_player,
 };
 
 pub struct PlayerClientPlugin;
@@ -29,11 +31,11 @@ impl Plugin for PlayerClientPlugin {
             .add_event::<PlayerSpawnEvent>()
             .add_systems(Update, speed_command)
             .add_systems(Update, teleport_command)
-            .add_systems(Startup, setup_player)
+            .add_systems(Startup, setup_client_player)
             .add_systems(Startup, initial_grab_cursor)
             .add_systems(
                 FixedUpdate,
-                (player_move, player_look).run_if(in_state(AppState::Game)),
+                (client_player_move, player_look).run_if(in_state(AppState::Game)),
             )
             .add_systems(OnEnter(AppState::Game), grab_cursor)
             .add_systems(OnExit(AppState::Game), release_cursor);

@@ -1,3 +1,4 @@
+use bevy::input::InputPlugin;
 use bevy_renet::renet::transport::{NetcodeServerTransport, ServerAuthentication, ServerConfig};
 
 use bevy_renet::transport::NetcodeServerPlugin;
@@ -5,22 +6,18 @@ use std::{net::UdpSocket, time::SystemTime};
 use voxels::app_state::state::AppState;
 use voxels::command_system::events::CommandDispatchEvent;
 use voxels::player::server::plugin::PlayerServerPlugin;
-use voxels::{connection_config, PlayerInput, PROTOCOL_ID};
+use voxels::{connection_config, PROTOCOL_ID};
 
 use bevy::prelude::*;
-use bevy_renet::{
-    renet::{RenetServer, ServerEvent},
-    RenetServerPlugin,
-};
-use voxels::ClientChannel;
+use bevy_renet::{renet::RenetServer, RenetServerPlugin};
 
 fn main() {
     let server_transport = build_server();
     let mut app = App::new();
     app.add_state::<AppState>();
-    app.add_plugins(DefaultPlugins);
+    app.add_plugins(MinimalPlugins);
+    app.add_plugins(InputPlugin);
     app.add_plugins(RenetServerPlugin);
-    app.add_systems(Update, (server_update_system,));
     app.add_event::<CommandDispatchEvent>();
     app.add_plugins(NetcodeServerPlugin);
     app.insert_resource(server_transport.0);
@@ -46,31 +43,4 @@ fn build_server() -> (RenetServer, NetcodeServerTransport) {
     };
     let transport = NetcodeServerTransport::new(server_config, socket).unwrap();
     (server, transport)
-}
-
-#[allow(clippy::too_many_arguments)]
-fn server_update_system(
-    mut server_events: EventReader<ServerEvent>,
-    mut server: ResMut<RenetServer>,
-) {
-    for event in server_events.read() {
-        match event {
-            ServerEvent::ClientConnected { client_id } => {
-                println!("Player {} connected.", client_id);
-            }
-            ServerEvent::ClientDisconnected { client_id, reason } => {
-                println!("Player {} disconnected: {}", client_id, reason);
-            }
-        }
-    }
-
-    for client_id in server.clients_id() {
-        while let Some(message) = server.receive_message(client_id, ClientChannel::Input) {
-            if let Ok(input) = bincode::deserialize::<PlayerInput>(&message) {
-                println!("input: {:?}", input);
-            } else {
-                println!("Failed to deserialize input.");
-            }
-        }
-    }
 }

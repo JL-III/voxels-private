@@ -35,6 +35,7 @@ pub enum ClientChannel {
     Command,
 }
 pub enum ServerChannel {
+    Input,
     ServerMessages,
     NetworkedEntities,
 }
@@ -54,8 +55,8 @@ pub enum ServerMessages {
 impl From<ClientChannel> for u8 {
     fn from(channel_id: ClientChannel) -> Self {
         match channel_id {
-            ClientChannel::Command => 0,
-            ClientChannel::Input => 1,
+            ClientChannel::Input => 0,
+            ClientChannel::Command => 1,
         }
     }
 }
@@ -84,8 +85,9 @@ impl ClientChannel {
 impl From<ServerChannel> for u8 {
     fn from(channel_id: ServerChannel) -> Self {
         match channel_id {
-            ServerChannel::NetworkedEntities => 0,
-            ServerChannel::ServerMessages => 1,
+            ServerChannel::Input => 0,
+            ServerChannel::NetworkedEntities => 1,
+            ServerChannel::ServerMessages => 2,
         }
     }
 }
