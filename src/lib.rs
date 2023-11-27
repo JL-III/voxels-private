@@ -20,6 +20,13 @@ pub struct Player {
     pub id: ClientId,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PlayerMovement {
+    pub input: PlayerInput,
+    pub previous_position: Vec3,
+    pub predicted_position: Vec3,
+}
+
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Component, Resource)]
 pub struct PlayerInput {
     pub up: bool,

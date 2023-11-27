@@ -10,7 +10,7 @@ use crate::{
         events::PlayerMoveEvent,
         lib::{InputState, MovementSettings, Player},
     },
-    ClientChannel, PlayerInput,
+    ClientChannel, PlayerInput, PlayerMovement,
 };
 
 pub fn client_player_move(
@@ -123,13 +123,18 @@ pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWind
     }
 }
 
-fn convert_player_move_event(player_move_event: &PlayerMoveEvent) -> PlayerInput {
-    PlayerInput {
-        up: player_move_event.starting_position.y < player_move_event.final_position.y,
-        down: player_move_event.starting_position.y > player_move_event.final_position.y,
-        left: player_move_event.starting_position.x < player_move_event.final_position.x,
-        right: player_move_event.starting_position.x > player_move_event.final_position.x,
-        forward: player_move_event.starting_position.z < player_move_event.final_position.z,
-        backward: player_move_event.starting_position.z > player_move_event.final_position.z,
+fn convert_player_move_event(player_move_event: &PlayerMoveEvent) -> PlayerMovement {
+    PlayerMovement {
+        input: PlayerInput {
+            up: player_move_event.starting_position.y < player_move_event.final_position.y,
+            down: player_move_event.starting_position.y > player_move_event.final_position.y,
+            left: player_move_event.starting_position.x < player_move_event.final_position.x,
+            right: player_move_event.starting_position.x > player_move_event.final_position.x,
+            forward: player_move_event.starting_position.z < player_move_event.final_position.z,
+            backward: player_move_event.starting_position.z > player_move_event.final_position.z,
+        },
+        previous_position: player_move_event.starting_position,
+        predicted_position: player_move_event.final_position,
     }
+    
 }
