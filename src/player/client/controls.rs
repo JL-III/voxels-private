@@ -136,5 +136,4 @@ fn convert_player_move_event(player_move_event: &PlayerMoveEvent) -> PlayerMovem
         previous_position: player_move_event.starting_position,
         predicted_position: player_move_event.final_position,
     }
-    
 }

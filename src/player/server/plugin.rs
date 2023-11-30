@@ -1,4 +1,9 @@
-use bevy::app::{App, FixedUpdate, Plugin, Startup};
+use std::time::Duration;
+
+use bevy::{
+    app::{App, FixedUpdate, Plugin, Startup},
+    time::{Timer, TimerMode},
+};
 use bevy_renet::renet::RenetClient;
 
 use crate::{
@@ -9,7 +14,10 @@ use crate::{
     },
 };
 
-use super::{movement::server_player_move, setup::setup_server_player};
+use super::{
+    movement::{server_player_move, PlayerSyncLocationTimer},
+    setup::setup_server_player,
+};
 
 pub struct PlayerServerPlugin;
 
@@ -19,6 +27,10 @@ impl Plugin for PlayerServerPlugin {
 
         app.init_resource::<InputState>()
             .init_resource::<MovementSettings>()
+            .insert_resource(PlayerSyncLocationTimer(Timer::new(
+                Duration::from_secs(10),
+                TimerMode::Repeating,
+            )))
             .insert_resource(client)
             .add_event::<PlayerMoveEvent>()
             .add_event::<PlayerSpawnEvent>()
