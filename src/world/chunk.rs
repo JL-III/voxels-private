@@ -1,5 +1,5 @@
 use crate::{
-    player::events::{PlayerMoveEvent, PlayerSpawnEvent},
+    player::{client::events::PlayerMoveEvent, events::PlayerSpawnEvent},
     world::block::Block,
 };
 use bevy::{

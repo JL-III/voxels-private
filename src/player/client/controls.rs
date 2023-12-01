@@ -6,12 +6,11 @@ use bevy::{
 use bevy_renet::renet::RenetClient;
 
 use crate::{
-    player::{
-        events::PlayerMoveEvent,
-        lib::{InputState, MovementSettings, Player},
-    },
+    player::lib::{InputState, MovementSettings, Player},
     ClientChannel, ServerChannel,
 };
+
+use super::events::PlayerMoveEvent;
 
 pub fn client_player_move(
     keyboard_input: Res<Input<KeyCode>>,

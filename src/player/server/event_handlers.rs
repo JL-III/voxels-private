@@ -1,11 +1,8 @@
 use bevy::prelude::*;
 
-use crate::player::{
-    lib::{MovementSettings, Player},
-    server::plugin::DictatePlayerPositionEvent,
-};
+use crate::player::lib::{MovementSettings, Player};
 
-use super::plugin::ClientSentMoveEvent;
+use super::events::{ClientSentMoveEvent, DictatePlayerPositionEvent};
 
 #[derive(Resource)]
 pub struct PlayerSyncLocationTimer(pub Timer);

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{player::events::PlayerMoveEvent, world::events::ChunkCreatedEvent};
+use crate::{player::client::events::PlayerMoveEvent, world::events::ChunkCreatedEvent};
 
 #[derive(Component)]
 pub struct CoordinateDisplay {}

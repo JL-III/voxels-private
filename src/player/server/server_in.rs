@@ -3,7 +3,7 @@ use bevy_renet::renet::RenetServer;
 
 use crate::{ClientChannel, PlayerDirection};
 
-use super::plugin::ClientSentMoveEvent;
+use super::events::ClientSentMoveEvent;
 
 ///
 /// listens for a client message for player movement to come through

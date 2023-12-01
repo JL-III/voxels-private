@@ -1,3 +1,4 @@
-pub mod controls;
+mod controls;
+pub mod events;
 pub mod plugin;
-pub mod setup;
+mod setup;

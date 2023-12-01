@@ -3,7 +3,7 @@ use bevy_renet::renet::RenetServer;
 
 use crate::ServerChannel;
 
-use super::plugin::DictatePlayerPositionEvent;
+use super::events::DictatePlayerPositionEvent;
 
 pub fn dictate_player_position(
     mut dictate_player_position_event_reader: EventReader<DictatePlayerPositionEvent>,

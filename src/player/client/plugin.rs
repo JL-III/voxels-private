@@ -8,13 +8,14 @@ use crate::{
     app_state::state::AppState,
     connection_config,
     player::{
-        events::{PlayerMoveEvent, PlayerSpawnEvent},
+        events::PlayerSpawnEvent,
         lib::{speed_command, teleport_command, InputState, MovementSettings},
     },
 };
 
 use super::{
     controls::{client_player_move, grab_cursor, initial_grab_cursor, player_look, release_cursor},
+    events::PlayerMoveEvent,
     setup::setup_client_player,
 };
 
