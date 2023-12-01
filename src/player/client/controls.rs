@@ -10,7 +10,7 @@ use crate::{
         events::PlayerMoveEvent,
         lib::{InputState, MovementSettings, Player},
     },
-    ClientChannel, PlayerInput, PlayerMovement,
+    ClientChannel, ServerChannel,
 };
 
 pub fn client_player_move(
@@ -24,6 +24,15 @@ pub fn client_player_move(
 ) {
     if let Ok(window) = window_query.get_single() {
         for mut transform in transform_query.iter_mut() {
+
+            while let Some(server_message) = client.receive_message(ServerChannel::PlayerSyncLocation) {
+                if let Ok(server_dictate_player_position) = bincode::deserialize::<Vec3>(&server_message) {
+                    println!("recieved dictated player position: {}", server_dictate_player_position);
+                    transform.translation = server_dictate_player_position;
+                    return
+                }
+            }
+
             let mut player_move_event = PlayerMoveEvent {
                 starting_position: transform.translation,
                 final_position: transform.translation,
@@ -54,7 +63,7 @@ pub fn client_player_move(
 
             player_move_event.final_position = transform.translation;
             if player_move_event.starting_position != player_move_event.final_position {
-                let player_input = convert_player_move_event(&player_move_event);
+                let player_input = get_player_move_direction(&player_move_event);
                 player_move_event_writer.send(player_move_event);
                 if let Ok(player_input_message) = bincode::serialize(&player_input) {
                     client.send_message(ClientChannel::Input, player_input_message);
@@ -123,17 +132,7 @@ pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWind
     }
 }
 
-fn convert_player_move_event(player_move_event: &PlayerMoveEvent) -> PlayerMovement {
-    PlayerMovement {
-        input: PlayerInput {
-            up: player_move_event.starting_position.y < player_move_event.final_position.y,
-            down: player_move_event.starting_position.y > player_move_event.final_position.y,
-            left: player_move_event.starting_position.x < player_move_event.final_position.x,
-            right: player_move_event.starting_position.x > player_move_event.final_position.x,
-            forward: player_move_event.starting_position.z < player_move_event.final_position.z,
-            backward: player_move_event.starting_position.z > player_move_event.final_position.z,
-        },
-        previous_position: player_move_event.starting_position,
-        predicted_position: player_move_event.final_position,
-    }
+fn get_player_move_direction(player_move_event: &PlayerMoveEvent) -> Vec3 {
+    let direction = player_move_event.final_position - player_move_event.starting_position;
+    direction.normalize()
 }

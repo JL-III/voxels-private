@@ -21,28 +21,14 @@ pub struct Player {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct PlayerMovement {
-    pub input: PlayerInput,
-    pub previous_position: Vec3,
-    pub predicted_position: Vec3,
-}
-
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Component, Resource)]
-pub struct PlayerInput {
-    pub up: bool,
-    pub down: bool,
-    pub left: bool,
-    pub right: bool,
-    pub forward: bool,
-    pub backward: bool,
-}
+pub struct PlayerDirection(Vec3);
 
 pub enum ClientChannel {
     Input,
     Command,
 }
 pub enum ServerChannel {
-    Input,
+    PlayerSyncLocation,
     ServerMessages,
     NetworkedEntities,
 }
@@ -92,7 +78,7 @@ impl ClientChannel {
 impl From<ServerChannel> for u8 {
     fn from(channel_id: ServerChannel) -> Self {
         match channel_id {
-            ServerChannel::Input => 0,
+            ServerChannel::PlayerSyncLocation => 0,
             ServerChannel::NetworkedEntities => 1,
             ServerChannel::ServerMessages => 2,
         }
@@ -103,9 +89,11 @@ impl ServerChannel {
     pub fn channels_config() -> Vec<ChannelConfig> {
         vec![
             ChannelConfig {
-                channel_id: Self::NetworkedEntities.into(),
+                channel_id: Self::PlayerSyncLocation.into(),
                 max_memory_usage_bytes: 10 * 1024 * 1024,
-                send_type: SendType::Unreliable,
+                send_type: SendType::ReliableOrdered {
+                    resend_time: Duration::ZERO,
+                }
             },
             ChannelConfig {
                 channel_id: Self::ServerMessages.into(),
