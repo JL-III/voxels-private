@@ -93,7 +93,7 @@ impl ServerChannel {
                 max_memory_usage_bytes: 10 * 1024 * 1024,
                 send_type: SendType::ReliableOrdered {
                     resend_time: Duration::ZERO,
-                }
+                },
             },
             ChannelConfig {
                 channel_id: Self::ServerMessages.into(),
