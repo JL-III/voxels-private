@@ -15,8 +15,10 @@ use crate::{
 };
 
 use super::{
-    event_handlers::{client_sent_move_event_handler, PlayerSyncLocationTimer},
-    events::{ClientSentMoveEvent, DictatePlayerPositionEvent},
+    events::{
+        client_sent_move_event_handler, ClientSentMoveEvent, DictatePlayerPositionEvent,
+        PlayerSyncLocationTimer,
+    },
     server_in::client_move_player,
     server_out::dictate_player_position,
     setup::setup_server_player,

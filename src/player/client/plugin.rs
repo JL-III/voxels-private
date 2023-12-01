@@ -14,6 +14,8 @@ use crate::{
 };
 
 use super::{
+    client_in::server_update_player,
+    client_out::send_player_movement,
     controls::{client_player_move, grab_cursor, initial_grab_cursor, player_look, release_cursor},
     events::PlayerMoveEvent,
     setup::setup_client_player,
@@ -38,6 +40,8 @@ impl Plugin for PlayerClientPlugin {
                 FixedUpdate,
                 (client_player_move, player_look).run_if(in_state(AppState::Game)),
             )
+            .add_systems(Update, server_update_player)
+            .add_systems(Update, send_player_movement)
             .add_systems(OnEnter(AppState::Game), grab_cursor)
             .add_systems(OnExit(AppState::Game), release_cursor);
     }

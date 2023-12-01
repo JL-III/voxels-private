@@ -3,12 +3,8 @@ use bevy::{
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
-use bevy_renet::renet::RenetClient;
 
-use crate::{
-    player::lib::{InputState, MovementSettings, Player},
-    ClientChannel, ServerChannel,
-};
+use crate::player::lib::{InputState, MovementSettings, Player};
 
 use super::events::PlayerMoveEvent;
 
@@ -19,23 +15,9 @@ pub fn client_player_move(
     window_query: Query<&Window, With<PrimaryWindow>>,
     settings: Res<MovementSettings>,
     mut transform_query: Query<&mut Transform, With<Player>>,
-    mut client: ResMut<RenetClient>,
 ) {
     if let Ok(window) = window_query.get_single() {
         for mut transform in transform_query.iter_mut() {
-            while let Some(server_message) =
-                client.receive_message(ServerChannel::PlayerSyncLocation)
-            {
-                if let Ok(server_dictate_player_position) =
-                    bincode::deserialize::<Vec3>(&server_message)
-                {
-                    println!("server: {}", server_dictate_player_position);
-                    println!("client: {}", transform.translation);
-                    transform.translation = server_dictate_player_position;
-                    return;
-                }
-            }
-
             let mut player_move_event = PlayerMoveEvent {
                 starting_position: transform.translation,
                 final_position: transform.translation,
@@ -66,13 +48,7 @@ pub fn client_player_move(
 
             player_move_event.final_position = transform.translation;
             if player_move_event.starting_position != player_move_event.final_position {
-                let player_input = get_player_move_direction(&player_move_event);
                 player_move_event_writer.send(player_move_event);
-                if let Ok(player_input_message) = bincode::serialize(&player_input) {
-                    client.send_message(ClientChannel::Input, player_input_message);
-                } else {
-                    warn!("could not serialize player_input_message");
-                }
             }
         }
     } else {
@@ -133,9 +109,4 @@ pub fn initial_grab_cursor(mut window_query: Query<&mut Window, With<PrimaryWind
     } else {
         warn!("Primary window not found for `initial_grab_cursor`!")
     }
-}
-
-fn get_player_move_direction(player_move_event: &PlayerMoveEvent) -> Vec3 {
-    let direction = player_move_event.final_position - player_move_event.starting_position;
-    direction.normalize()
 }
