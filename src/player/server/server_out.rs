@@ -5,7 +5,7 @@ use crate::ServerChannel;
 
 use super::plugin::DictatePlayerPositionEvent;
 
-pub fn server_dictate_player_position(
+pub fn dictate_player_position(
     mut dictate_player_position_event_reader: EventReader<DictatePlayerPositionEvent>,
     mut server: ResMut<RenetServer>,
 ) {

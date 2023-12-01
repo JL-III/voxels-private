@@ -10,7 +10,7 @@ use super::plugin::ClientSentMoveEvent;
 #[derive(Resource)]
 pub struct PlayerSyncLocationTimer(pub Timer);
 
-pub fn server_player_move(
+pub fn client_sent_move_event_handler(
     time: Res<Time>,
     settings: Res<MovementSettings>,
     mut transform_query: Query<&mut Transform, With<Player>>,
@@ -31,7 +31,6 @@ pub fn server_player_move(
                     position: transform.translation,
                 };
                 dictate_player_position_event_writer.send(dictate_position);
-                println!("sent event")
             }
         }
     }

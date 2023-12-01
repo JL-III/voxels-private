@@ -1,4 +1,4 @@
-mod event_responders;
+mod event_handlers;
 pub mod plugin;
 mod server_in;
 mod server_out;

@@ -17,9 +17,9 @@ use crate::{
 };
 
 use super::{
-    event_responders::{server_player_move, PlayerSyncLocationTimer},
-    server_in::server_listen_client_move_player,
-    server_out::server_dictate_player_position,
+    event_handlers::{client_sent_move_event_handler, PlayerSyncLocationTimer},
+    server_in::client_move_player,
+    server_out::dictate_player_position,
     setup::setup_server_player,
 };
 
@@ -53,8 +53,8 @@ impl Plugin for PlayerServerPlugin {
             .add_systems(Startup, setup_server_player)
             // something happening here with updates and fixed updates causing systems to miss events that are fired
             // this combination appears to work but it definitely means i am not understanding something
-            .add_systems(FixedUpdate, server_player_move)
-            .add_systems(FixedUpdate, server_listen_client_move_player)
-            .add_systems(Update, server_dictate_player_position);
+            .add_systems(FixedUpdate, client_sent_move_event_handler)
+            .add_systems(FixedUpdate, client_move_player)
+            .add_systems(Update, dictate_player_position);
     }
 }

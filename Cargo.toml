@@ -26,6 +26,14 @@ fastrand = "2.0.0"
 bevy_renet = { version = "0.0.10", features = ["serde"]}
 
 [[bin]]
+name = "voxels"
+path = "src/main.rs"
+
+[[bin]]
+name = "client"
+path = "src/bin/client.rs"
+
+[[bin]]
 name = "server"
 path = "src/bin/server.rs"
 
