@@ -4,7 +4,6 @@ use bevy_atmosphere::prelude::*;
 
 use crate::world::block::VertexScale;
 use crate::world::chunk::{
-    load_chunk, load_chunk_from_queue,
     ChunkQueue, ChunkRadius, ChunkRegistry,
 };
 use crate::world::events::{ChunkCreatedEvent, PrepareChunkLoadEvent};
@@ -31,8 +30,6 @@ impl Plugin for ClientWorldPlugin {
         .add_plugins(AtmospherePlugin)
         .add_event::<ChunkCreatedEvent>()
         .add_event::<PrepareChunkLoadEvent>()
-        .add_systems(Update, load_chunk)
-        .add_systems(Update, load_chunk_from_queue)
         .add_systems(Update, render)
         .add_systems(Startup, setup_environment)
         .add_systems(Update, daylight_cycle);

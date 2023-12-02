@@ -46,6 +46,7 @@ fn hash_float_array<H: Hasher>(arr: &[f32], state: &mut H) {
     }
 }
 
+// this needs a better function name
 pub fn render(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,

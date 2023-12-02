@@ -1,17 +1,19 @@
 use bevy::prelude::*;
 
 use crate::{
-    player::client::events::PlayerMoveEvent,
+    player::{client::events::PlayerMoveEvent, events::PlayerSpawnEvent},
     world::{
         block::VertexScale,
         chunk::{
-            chunk_enter_listener, load_chunk, load_chunk_from_queue, player_move_event_listener,
-            setup_initial_chunks, ChunkQueue, ChunkRadius, ChunkRegistry,
+            player_move_event_listener,
+            ChunkQueue, ChunkRadius, ChunkRegistry,
         },
         commands::{chunk_despawn_command, chunk_radius_command},
         events::{ChunkCreatedEvent, ChunkEnterEvent, PrepareChunkLoadEvent},
     },
 };
+
+use super::chunk::{chunk_enter_listener, setup_initial_chunks, load_chunk_from_queue, load_chunk};
 
 pub struct ServerWorldPlugin;
 
@@ -27,6 +29,7 @@ impl Plugin for ServerWorldPlugin {
         .add_event::<ChunkEnterEvent>()
         .add_event::<PrepareChunkLoadEvent>()
         .add_event::<PlayerMoveEvent>()
+        .add_event::<PlayerSpawnEvent>()
         .add_systems(Update, load_chunk)
         .add_systems(Update, load_chunk_from_queue)
         .add_systems(Update, chunk_enter_listener)
