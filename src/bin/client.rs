@@ -18,7 +18,7 @@ use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 use voxels::{
     app_state::plugin::AppStatePlugin, command_system::plugin::CommandPlugin,
     debug_menu::plugin::DebugPlugin, main_menu::plugin::MainMenuPlugin,
-    player::client::plugin::PlayerClientPlugin, world::plugin::WorldPlugin, *,
+    player::client::plugin::PlayerClientPlugin, world::client::plugin::ClientWorldPlugin, *,
 };
 
 #[derive(Component)]
@@ -70,7 +70,7 @@ fn main() {
         .add_plugins(ScreenFrameDiagnosticsPlugin)
         .add_plugins(AppStatePlugin)
         .add_plugins(PlayerClientPlugin)
-        .add_plugins(WorldPlugin)
+        .add_plugins(ClientWorldPlugin)
         .add_plugins(DebugPlugin)
         .add_plugins(MainMenuPlugin)
         .add_plugins(CommandPlugin)

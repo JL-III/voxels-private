@@ -1,4 +1,6 @@
-#[derive(Copy, Debug, PartialEq)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq)]
 pub enum Element {
     Air,
     Dirt,
@@ -6,14 +8,8 @@ pub enum Element {
     Stone,
 }
 
-impl Clone for Element {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-
 impl Element {
-    pub fn from_str(s: &str) -> Option<Element> {
+    pub fn from_string(s: &str) -> Option<Element> {
         match s {
             "air" => Some(Element::Air),
             "dirt" => Some(Element::Dirt),

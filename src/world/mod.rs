@@ -1,8 +1,7 @@
-mod atmosphere;
-mod block;
-pub(crate) mod chunk;
+pub mod block;
+pub mod chunk;
+pub mod client;
 pub(crate) mod commands;
-mod element;
+pub mod element;
 pub(crate) mod events;
-mod mesh_utils;
-pub mod plugin;
+pub mod server;

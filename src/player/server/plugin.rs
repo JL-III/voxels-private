@@ -9,6 +9,7 @@ use bevy_renet::renet::RenetClient;
 use crate::{
     connection_config,
     player::{
+        client::events::PlayerMoveEvent,
         events::PlayerSpawnEvent,
         lib::{InputState, MovementSettings},
     },
@@ -40,6 +41,7 @@ impl Plugin for PlayerServerPlugin {
             )))
             .insert_resource(client)
             .add_event::<PlayerSpawnEvent>()
+            .add_event::<PlayerMoveEvent>()
             .add_systems(Startup, setup_server_player)
             // something happening here with updates and fixed updates causing systems to miss events that are fired
             // this combination appears to work but it definitely means i am not understanding something

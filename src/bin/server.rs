@@ -6,6 +6,7 @@ use std::{net::UdpSocket, time::SystemTime};
 use voxels::app_state::state::AppState;
 use voxels::command_system::events::CommandDispatchEvent;
 use voxels::player::server::plugin::PlayerServerPlugin;
+use voxels::world::server::plugin::ServerWorldPlugin;
 use voxels::{connection_config, PROTOCOL_ID};
 
 use bevy::prelude::*;
@@ -23,6 +24,7 @@ fn main() {
     app.insert_resource(server_transport.0);
     app.insert_resource(server_transport.1);
     app.add_plugins(PlayerServerPlugin);
+    app.add_plugins(ServerWorldPlugin);
 
     app.run();
 }

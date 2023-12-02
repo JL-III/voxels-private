@@ -1,6 +1,7 @@
 use std::ops::Index;
 
 use bevy::{prelude::*, render::render_resource::PrimitiveTopology};
+use serde::{Deserialize, Serialize};
 
 use super::element::Element;
 
@@ -14,7 +15,7 @@ pub enum BlockFace {
     Bottom,
 }
 
-#[derive(Component, Clone, Copy, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Component, Clone, Copy, Debug, PartialEq)]
 pub struct Block {
     pub uv_mapping: UVMapping,
     pub element: Element,
@@ -45,7 +46,7 @@ impl Block {
     }
 }
 
-#[derive(Component, Copy, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Component, Copy, Debug, PartialEq)]
 pub struct UVMapping(pub [f32; 2]);
 
 impl Clone for UVMapping {

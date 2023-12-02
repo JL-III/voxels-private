@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_atmosphere::prelude::*;
 
+// time logic will eventually be handled by the server
+
 // Marker for updating the position of the light, not needed unless we have multiple lights
 #[derive(Component)]
 pub struct Sun;

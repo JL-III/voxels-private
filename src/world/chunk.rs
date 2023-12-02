@@ -1,35 +1,28 @@
-use crate::{
-    player::{client::events::PlayerMoveEvent, events::PlayerSpawnEvent},
-    world::block::Block,
-};
 use bevy::{
-    asset::{AssetServer, Assets, Handle},
     ecs::{
         component::Component,
         event::{EventReader, EventWriter},
         system::{Commands, Res, ResMut, Resource},
     },
     math::Vec3,
-    pbr::{PbrBundle, StandardMaterial},
-    prelude::default,
-    render::{mesh::Mesh, texture::Image},
     transform::{components::Transform, TransformBundle},
 };
 use noise::{NoiseFn, Perlin};
+use serde::{Deserialize, Serialize};
 
-use super::{
-    block::VertexScale,
-    element::Element,
-    events::{ChunkCreatedEvent, ChunkEnterEvent, PrepareChunkLoadEvent},
-    mesh_utils::{gen_meshes, merge_meshes},
+use crate::{
+    player::{client::events::PlayerMoveEvent, events::PlayerSpawnEvent},
+    world::events::{ChunkCreatedEvent, ChunkEnterEvent, PrepareChunkLoadEvent},
 };
+
+use super::{block::Block, element::Element};
 
 pub const CHUNK_WIDTH: usize = 16;
 pub const CHUNK_HEIGHT: usize = 16;
 pub const CHUNK_DEPTH: usize = 16;
 pub const CHUNK_VERT: i32 = 16;
 
-#[derive(Component, Clone, Copy, PartialEq)]
+#[derive(Serialize, Deserialize, Component, Clone, Copy, PartialEq, Debug)]
 pub struct Chunk {
     pub chunk_x: f32,
     pub chunk_z: f32,
@@ -66,6 +59,7 @@ pub fn chunk_enter_listener(
     mut chunk_enter_event_reader: EventReader<ChunkEnterEvent>,
 ) {
     for event in chunk_enter_event_reader.read() {
+        println!("Server: entered new chunk!");
         let chunks = get_surrounding_chunks(
             event.chunk_coords[0] as i32,
             event.chunk_coords[1] as i32,
@@ -157,7 +151,6 @@ pub fn generate_chunk(x: f32, y: f32, z: f32) -> Chunk {
     for dx in 0..CHUNK_WIDTH {
         for dy in 0..CHUNK_HEIGHT {
             for dz in 0..CHUNK_DEPTH {
-                // println!("value: y:{} dy:{}", y, dy);
                 chunk.blocks[dx][dy][dz] = Block::new(get_random_element(
                     y as usize * 15 + dy,
                     generate_noise(
@@ -170,34 +163,6 @@ pub fn generate_chunk(x: f32, y: f32, z: f32) -> Chunk {
         }
     }
     chunk
-}
-
-pub fn render(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut chunk_create_event_reader: EventReader<ChunkCreatedEvent>,
-    vertex_scale: Res<VertexScale>,
-    asset_server: Res<AssetServer>,
-) {
-    for chunk_event in chunk_create_event_reader.read() {
-        let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
-        let combined_mesh = merge_meshes(gen_meshes(vertex_scale.scale, chunk_event));
-        commands.entity(chunk_event.chunk_id).insert(PbrBundle {
-            mesh: meshes.add(combined_mesh.clone()),
-            material: materials.add(StandardMaterial {
-                base_color_texture: Some(block_atlas.clone()),
-                unlit: false,
-                ..default()
-            }),
-            transform: Transform::from_xyz(
-                chunk_event.chunk.chunk_x,
-                chunk_event.chunk.chunk_y,
-                chunk_event.chunk.chunk_z,
-            ),
-            ..default()
-        });
-    }
 }
 
 pub fn player_move_event_listener(

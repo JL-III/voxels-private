@@ -1,14 +1,21 @@
+use bevy::asset::{AssetServer, Assets, Handle};
+use bevy::ecs::event::EventReader;
+use bevy::ecs::system::{Commands, Res, ResMut};
 use bevy::math::{Vec2, Vec3};
+use bevy::pbr::{PbrBundle, StandardMaterial};
+use bevy::prelude::default;
 use bevy::render::mesh::Indices;
 use bevy::render::mesh::{Mesh, VertexAttributeValues};
 use bevy::render::render_resource::PrimitiveTopology;
+use bevy::render::texture::Image;
+use bevy::transform::components::Transform;
 use std::hash::Hash;
 use std::hash::Hasher;
 
-use super::block::{create_quad, BlockFace};
-use super::chunk::{CHUNK_DEPTH, CHUNK_HEIGHT, CHUNK_WIDTH};
-use super::element::Element;
-use super::events::ChunkCreatedEvent;
+use crate::world::block::{create_quad, BlockFace, VertexScale};
+use crate::world::chunk::{CHUNK_DEPTH, CHUNK_HEIGHT, CHUNK_WIDTH};
+use crate::world::element::Element;
+use crate::world::events::ChunkCreatedEvent;
 
 #[derive(Clone)]
 struct VertexData {
@@ -36,6 +43,34 @@ impl Hash for VertexData {
 fn hash_float_array<H: Hasher>(arr: &[f32], state: &mut H) {
     for &num in arr {
         num.to_bits().hash(state);
+    }
+}
+
+pub fn render(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut chunk_create_event_reader: EventReader<ChunkCreatedEvent>,
+    vertex_scale: Res<VertexScale>,
+    asset_server: Res<AssetServer>,
+) {
+    for chunk_event in chunk_create_event_reader.read() {
+        let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
+        let combined_mesh = merge_meshes(gen_meshes(vertex_scale.scale, chunk_event));
+        commands.entity(chunk_event.chunk_id).insert(PbrBundle {
+            mesh: meshes.add(combined_mesh.clone()),
+            material: materials.add(StandardMaterial {
+                base_color_texture: Some(block_atlas.clone()),
+                unlit: false,
+                ..default()
+            }),
+            transform: Transform::from_xyz(
+                chunk_event.chunk.chunk_x,
+                chunk_event.chunk.chunk_y,
+                chunk_event.chunk.chunk_z,
+            ),
+            ..default()
+        });
     }
 }
 

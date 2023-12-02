@@ -3,6 +3,7 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy_renet::renet::{ChannelConfig, ClientId, ConnectionConfig, SendType};
 use serde::{Deserialize, Serialize};
+use world::chunk::Chunk;
 
 pub mod app_state;
 pub mod command_system;
@@ -23,6 +24,9 @@ pub struct Player {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PlayerDirection(Vec3);
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ServerChunk(Chunk);
+
 pub enum ClientChannel {
     Input,
     Command,
@@ -30,7 +34,7 @@ pub enum ClientChannel {
 pub enum ServerChannel {
     PlayerSyncLocation,
     ServerMessages,
-    NetworkedEntities,
+    Chunks,
 }
 
 #[derive(Debug, Serialize, Deserialize, Component)]
@@ -79,8 +83,8 @@ impl From<ServerChannel> for u8 {
     fn from(channel_id: ServerChannel) -> Self {
         match channel_id {
             ServerChannel::PlayerSyncLocation => 0,
-            ServerChannel::NetworkedEntities => 1,
-            ServerChannel::ServerMessages => 2,
+            ServerChannel::ServerMessages => 1,
+            ServerChannel::Chunks => 2,
         }
     }
 }
@@ -100,6 +104,13 @@ impl ServerChannel {
                 max_memory_usage_bytes: 10 * 1024 * 1024,
                 send_type: SendType::ReliableOrdered {
                     resend_time: Duration::from_millis(200),
+                },
+            },
+            ChannelConfig {
+                channel_id: Self::Chunks.into(),
+                max_memory_usage_bytes: 10 * 1024 * 1024,
+                send_type: SendType::ReliableOrdered {
+                    resend_time: Duration::ZERO,
                 },
             },
         ]
