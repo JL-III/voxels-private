@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 
-use crate::{player::lib::Player, ServerChannel};
+use crate::{player::lib::Player, net::ServerChannel};
 
 pub fn server_update_player(
     // might want this here, not sure.

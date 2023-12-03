@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_renet::renet::RenetServer;
 
-use crate::ServerChannel;
+use crate::net::ServerChannel;
 
 use super::events::DictatePlayerPositionEvent;
 

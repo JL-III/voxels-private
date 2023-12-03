@@ -7,7 +7,7 @@ use voxels::app_state::state::AppState;
 use voxels::command_system::events::CommandDispatchEvent;
 use voxels::player::server::plugin::PlayerServerPlugin;
 use voxels::world::server::plugin::ServerWorldPlugin;
-use voxels::{connection_config, PROTOCOL_ID};
+use voxels::net::{connection_config, PROTOCOL_ID};
 
 use bevy::prelude::*;
 use bevy_renet::{renet::RenetServer, RenetServerPlugin};

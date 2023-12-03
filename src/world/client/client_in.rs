@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 
-use crate::{world::chunk::Chunk, ServerChannel};
+use crate::{world::chunk::Chunk, net::ServerChannel};
 
 use super::events::RenderChunk;
 

@@ -6,7 +6,7 @@ use bevy_renet::renet::RenetClient;
 
 use crate::{
     app_state::state::AppState,
-    connection_config,
+    net::connection_config,
     player::{
         events::PlayerSpawnEvent,
         lib::{speed_command, teleport_command, InputState, MovementSettings},

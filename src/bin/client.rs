@@ -18,7 +18,7 @@ use std::{collections::HashMap, net::UdpSocket, time::SystemTime};
 use voxels::{
     app_state::plugin::AppStatePlugin, command_system::plugin::CommandPlugin,
     debug_menu::plugin::DebugPlugin, main_menu::plugin::MainMenuPlugin,
-    player::client::plugin::PlayerClientPlugin, world::client::plugin::ClientWorldPlugin, *,
+    player::client::plugin::PlayerClientPlugin, world::client::plugin::ClientWorldPlugin, net::{connection_config, PROTOCOL_ID, ServerMessages, ServerChannel},
 };
 
 #[derive(Component)]
