@@ -1,21 +1,13 @@
-use bevy::asset::{AssetServer, Assets, Handle};
-use bevy::ecs::event::EventReader;
-use bevy::ecs::system::{Commands, Res, ResMut};
 use bevy::math::{Vec2, Vec3};
-use bevy::pbr::{PbrBundle, StandardMaterial};
-use bevy::prelude::default;
 use bevy::render::mesh::Indices;
 use bevy::render::mesh::{Mesh, VertexAttributeValues};
 use bevy::render::render_resource::PrimitiveTopology;
-use bevy::render::texture::Image;
-use bevy::transform::components::Transform;
 use std::hash::Hash;
 use std::hash::Hasher;
 
-use crate::world::block::{create_quad, BlockFace, VertexScale};
-use crate::world::chunk::{CHUNK_DEPTH, CHUNK_HEIGHT, CHUNK_WIDTH};
+use crate::world::block::{create_quad, BlockFace};
+use crate::world::chunk::{Chunk, CHUNK_DEPTH, CHUNK_HEIGHT, CHUNK_WIDTH};
 use crate::world::element::Element;
-use crate::world::events::ChunkCreatedEvent;
 
 #[derive(Clone)]
 struct VertexData {
@@ -43,35 +35,6 @@ impl Hash for VertexData {
 fn hash_float_array<H: Hasher>(arr: &[f32], state: &mut H) {
     for &num in arr {
         num.to_bits().hash(state);
-    }
-}
-
-// this needs a better function name
-pub fn render(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut chunk_create_event_reader: EventReader<ChunkCreatedEvent>,
-    vertex_scale: Res<VertexScale>,
-    asset_server: Res<AssetServer>,
-) {
-    for chunk_event in chunk_create_event_reader.read() {
-        let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
-        let combined_mesh = merge_meshes(gen_meshes(vertex_scale.scale, chunk_event));
-        commands.entity(chunk_event.chunk_id).insert(PbrBundle {
-            mesh: meshes.add(combined_mesh.clone()),
-            material: materials.add(StandardMaterial {
-                base_color_texture: Some(block_atlas.clone()),
-                unlit: false,
-                ..default()
-            }),
-            transform: Transform::from_xyz(
-                chunk_event.chunk.chunk_x,
-                chunk_event.chunk.chunk_y,
-                chunk_event.chunk.chunk_z,
-            ),
-            ..default()
-        });
     }
 }
 
@@ -118,25 +81,23 @@ pub fn merge_meshes(meshes: Vec<Mesh>) -> Mesh {
     combined_mesh
 }
 
-pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
+pub fn gen_meshes(scale: f32, chunk: &Chunk) -> Vec<Mesh> {
     let mut gen_meshes: Vec<Mesh> = Vec::new();
 
     for x in 0..CHUNK_WIDTH {
         for y in 0..CHUNK_HEIGHT {
             for z in 0..CHUNK_DEPTH {
-                let block = chunk_event.chunk.blocks[x][y][z];
+                let block = chunk.blocks[x][y][z];
                 let mesh_location = Vec3::new(
-                    chunk_event.chunk.chunk_x * 15.0 + x as f32,
-                    chunk_event.chunk.chunk_y * 15.0 + y as f32,
-                    chunk_event.chunk.chunk_z * 15.0 + z as f32,
+                    chunk.chunk_x * 15.0 + x as f32,
+                    chunk.chunk_y * 15.0 + y as f32,
+                    chunk.chunk_z * 15.0 + z as f32,
                 );
                 // exempt air from needing a mesh
                 if block.element == Element::Air {
                     continue;
                 };
-                if x == CHUNK_WIDTH - 1
-                    || chunk_event.chunk.blocks[x + 1][y][z].element == Element::Air
-                {
+                if x == CHUNK_WIDTH - 1 || chunk.blocks[x + 1][y][z].element == Element::Air {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::East,
@@ -144,9 +105,7 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if z == CHUNK_DEPTH - 1
-                    || chunk_event.chunk.blocks[x][y][z + 1].element == Element::Air
-                {
+                if z == CHUNK_DEPTH - 1 || chunk.blocks[x][y][z + 1].element == Element::Air {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::North,
@@ -154,9 +113,7 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if y == CHUNK_HEIGHT - 1
-                    || chunk_event.chunk.blocks[x][y + 1][z].element == Element::Air
-                {
+                if y == CHUNK_HEIGHT - 1 || chunk.blocks[x][y + 1][z].element == Element::Air {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::Top,
@@ -164,7 +121,7 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if y == 0 || chunk_event.chunk.blocks[x][y - 1][z].element == Element::Air {
+                if y == 0 || chunk.blocks[x][y - 1][z].element == Element::Air {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::Bottom,
@@ -172,7 +129,7 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if z == 0 || chunk_event.chunk.blocks[x][y][z - 1].element == Element::Air {
+                if z == 0 || chunk.blocks[x][y][z - 1].element == Element::Air {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::South,
@@ -180,7 +137,7 @@ pub fn gen_meshes(scale: f32, chunk_event: &ChunkCreatedEvent) -> Vec<Mesh> {
                         block.uv_mapping,
                     ));
                 }
-                if x == 0 || chunk_event.chunk.blocks[x - 1][y][z].element == Element::Air {
+                if x == 0 || chunk.blocks[x - 1][y][z].element == Element::Air {
                     gen_meshes.push(create_quad(
                         scale,
                         BlockFace::West,

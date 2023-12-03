@@ -8,10 +8,7 @@ use bevy::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    player::client::events::PlayerMoveEvent,
-    world::events::ChunkEnterEvent,
-};
+use crate::{player::client::events::PlayerMoveEvent, world::events::ChunkEnterEvent};
 
 use super::block::Block;
 

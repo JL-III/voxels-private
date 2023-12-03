@@ -10,6 +10,11 @@ pub struct ChunkCreatedEvent {
 }
 
 #[derive(Event)]
+pub struct RenderChunk {
+    pub chunk: Chunk,
+}
+
+#[derive(Event)]
 pub struct ChunkEnterEvent {
     pub chunk_coords: Vec3,
 }

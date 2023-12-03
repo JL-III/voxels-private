@@ -3,13 +3,12 @@ use bevy::utils::Duration;
 use bevy_atmosphere::prelude::*;
 
 use crate::world::block::VertexScale;
-use crate::world::chunk::{
-    ChunkQueue, ChunkRadius, ChunkRegistry,
-};
-use crate::world::events::{ChunkCreatedEvent, PrepareChunkLoadEvent};
+use crate::world::chunk::{ChunkQueue, ChunkRadius, ChunkRegistry};
+use crate::world::events::{ChunkCreatedEvent, PrepareChunkLoadEvent, RenderChunk};
 
 use super::atmosphere::{daylight_cycle, setup_environment, CycleTimer};
-use super::mesh_utils::render;
+use super::client_in::get_chunk_from_server;
+use super::events::render;
 
 pub struct ClientWorldPlugin;
 
@@ -30,8 +29,10 @@ impl Plugin for ClientWorldPlugin {
         .add_plugins(AtmospherePlugin)
         .add_event::<ChunkCreatedEvent>()
         .add_event::<PrepareChunkLoadEvent>()
+        .add_event::<RenderChunk>()
         .add_systems(Update, render)
         .add_systems(Startup, setup_environment)
-        .add_systems(Update, daylight_cycle);
+        .add_systems(Update, daylight_cycle)
+        .add_systems(Update, get_chunk_from_server);
     }
 }
