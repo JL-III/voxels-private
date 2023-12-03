@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 use bevy_renet::renet::RenetServer;
 
-use crate::{
-    world::{chunk::Chunk, events::ChunkCreatedEvent},
-    ServerChannel,
-};
+use crate::{world::chunk::Chunk, ServerChannel};
+
+use super::events::ChunkCreatedEvent;
 
 pub fn send_chunk_to_client(
     mut chunk_created_event_reader: EventReader<ChunkCreatedEvent>,

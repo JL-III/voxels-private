@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 
-use crate::{
-    world::{chunk::Chunk, events::RenderChunk},
-    ServerChannel,
-};
+use crate::{world::chunk::Chunk, ServerChannel};
+
+use super::events::RenderChunk;
 
 pub fn get_chunk_from_server(
     mut client: ResMut<RenetClient>,

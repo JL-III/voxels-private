@@ -1,8 +1,13 @@
 use bevy::prelude::*;
 
-use crate::world::{block::VertexScale, events::RenderChunk};
+use crate::world::chunk::Chunk;
 
 use super::mesh_utils::{gen_meshes, merge_meshes};
+
+#[derive(Event)]
+pub struct RenderChunk {
+    pub chunk: Chunk,
+}
 
 // this needs a better function name
 pub fn render(
@@ -10,12 +15,11 @@ pub fn render(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut render_chunk_event_reader: EventReader<RenderChunk>,
-    vertex_scale: Res<VertexScale>,
     asset_server: Res<AssetServer>,
 ) {
     for chunk_event in render_chunk_event_reader.read() {
         let block_atlas: Handle<Image> = asset_server.load("sprites/blockatlas.png");
-        let combined_mesh = merge_meshes(gen_meshes(vertex_scale.scale, &chunk_event.chunk));
+        let combined_mesh = merge_meshes(gen_meshes(1.0, &chunk_event.chunk));
         commands
             .spawn((
                 chunk_event.chunk,

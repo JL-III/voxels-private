@@ -63,11 +63,6 @@ impl Index<usize> for UVMapping {
     }
 }
 
-#[derive(Resource)]
-pub struct VertexScale {
-    pub scale: f32,
-}
-
 pub fn create_quad(scale: f32, side: BlockFace, offset: Vec3, uv_mapping: UVMapping) -> Mesh {
     let result = match side {
         BlockFace::North => create_north_quad(scale, offset, uv_mapping),

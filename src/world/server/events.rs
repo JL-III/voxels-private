@@ -1,17 +1,12 @@
 use bevy::prelude::*;
 
-use super::chunk::Chunk;
+use crate::world::chunk::Chunk;
 
 #[derive(Event)]
 pub struct ChunkCreatedEvent {
     pub chunk: Chunk,
     pub chunk_id: Entity,
     pub registry_size: usize,
-}
-
-#[derive(Event)]
-pub struct RenderChunk {
-    pub chunk: Chunk,
 }
 
 #[derive(Event)]

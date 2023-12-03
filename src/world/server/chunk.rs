@@ -10,9 +10,10 @@ use crate::{
             CHUNK_WIDTH,
         },
         element::Element,
-        events::{ChunkCreatedEvent, ChunkEnterEvent, PrepareChunkLoadEvent},
     },
 };
+
+use super::events::{ChunkCreatedEvent, ChunkEnterEvent, PrepareChunkLoadEvent};
 
 pub fn chunk_enter_listener(
     mut chunk_registry: ResMut<ChunkRegistry>,

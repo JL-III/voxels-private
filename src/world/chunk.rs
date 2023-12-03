@@ -8,9 +8,9 @@ use bevy::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{player::client::events::PlayerMoveEvent, world::events::ChunkEnterEvent};
+use crate::player::client::events::PlayerMoveEvent;
 
-use super::block::Block;
+use super::{block::Block, server::events::ChunkEnterEvent};
 
 pub const CHUNK_WIDTH: usize = 16;
 pub const CHUNK_HEIGHT: usize = 16;
