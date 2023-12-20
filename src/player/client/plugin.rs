@@ -9,7 +9,7 @@ use crate::{
     net::connection_config,
     player::{
         events::PlayerSpawnEvent,
-        lib::{speed_command, teleport_command, InputState, MovementSettings},
+        lib::{InputState, MovementSettings},
     },
 };
 
@@ -32,8 +32,9 @@ impl Plugin for PlayerClientPlugin {
             .insert_resource(client)
             .add_event::<PlayerMoveEvent>()
             .add_event::<PlayerSpawnEvent>()
-            .add_systems(Update, speed_command)
-            .add_systems(Update, teleport_command)
+            // removed until server recieves updates from client about speed or teleportation.
+            // .add_systems(Update, speed_command)
+            // .add_systems(Update, teleport_command)
             .add_systems(Startup, setup_client_player)
             .add_systems(Startup, initial_grab_cursor)
             .add_systems(
