@@ -9,6 +9,10 @@ Each module will contain the following files at minimum
 - (if applicable) **events.rs** - if a module emits an event, it must exist in the events.rs source file. This is to help in identifying what events are emitted.
 - (if applicable) **components.rs** - if a significant number of components exist, they will be broken out into a components.rs file.
 
+## Running
+- `cargo build --bins`
+- `cargo run --bin voxels`
+
 ## TODO
   ### physics
   - add physics

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_renet::renet::RenetServer;
 
-use crate::net::{PlayerDirection, ClientChannel};
+use crate::net::{ClientChannel, PlayerDirection};
 
 use super::events::ClientSentMoveEvent;
 

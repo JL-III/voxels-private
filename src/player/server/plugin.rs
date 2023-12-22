@@ -7,11 +7,12 @@ use bevy::{
 use bevy_renet::renet::RenetClient;
 
 use crate::{
+    net::connection_config,
     player::{
         client::events::PlayerMoveEvent,
         events::PlayerSpawnEvent,
         lib::{InputState, MovementSettings},
-    }, net::connection_config,
+    },
 };
 
 use super::{
