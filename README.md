@@ -13,6 +13,11 @@ Each module will contain the following files at minimum
 - `cargo build --bins`
 - `cargo run --bin voxels`
 
+## Learning
+- graphics / GPU and shaders
+- profiling tools
+- sparse voxel octrees
+
 ## TODO
   ### physics
   - add physics
