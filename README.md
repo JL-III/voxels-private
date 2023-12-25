@@ -14,9 +14,13 @@ Each module will contain the following files at minimum
 - `cargo run --bin voxels`
 
 ## Learning
-- graphics / GPU and shaders
+- graphics / GPU and shaders -> this will be for custom shader behavior as bevy already does this.
 - profiling tools
-- sparse voxel octrees
+- sparse voxel octrees -> https://eisenwave.github.io/voxel-compression-docs/index.html  
+  - **3D Computer Graphics**: Understanding basic concepts of 3D modeling and rendering.
+  - **Data Structures**: Familiarity with tree structures, especially octrees, and understanding of spatial data structures.  
+  - **Compression Techniques**: Knowledge of how data compression works, including both lossy and lossless methods.  
+  - **Mathematics**: A good grasp of geometry and possibly some linear algebra, to understand spatial transformations and encoding schemes.  
 
 ## TODO
   ### physics
